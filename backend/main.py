@@ -18,14 +18,20 @@ app = FastAPI(title="Wind Desk", version="1.0.0")
 @lru_cache(maxsize=1)
 def analysis():
     try:
-        return Analysis(json.loads((ROOT / "data/snapshot.json").read_text(encoding="utf-8")))
+        return Analysis(
+            json.loads((ROOT / "data/snapshot.json").read_text(encoding="utf-8"))
+        )
     except FileNotFoundError:
-        raise HTTPException(503, "Historical snapshot unavailable. Run python -m scripts.fetch_data.")
+        raise HTTPException(
+            503, "Historical snapshot unavailable. Run python -m scripts.fetch_data."
+        )
 
 
 def validate_range(first, last):
     if not FIRST <= first <= last <= LAST:
-        raise HTTPException(422, "Decision dates must be ordered and within January 2026.")
+        raise HTTPException(
+            422, "Decision dates must be ordered and within January 2026."
+        )
 
 
 @app.get("/api/health")
@@ -40,7 +46,9 @@ def decision(date: date = Query(...)):
 
 
 @app.get("/api/accuracy")
-def accuracy(first: date = Query(FIRST, alias="from"), last: date = Query(LAST, alias="to")):
+def accuracy(
+    first: date = Query(FIRST, alias="from"), last: date = Query(LAST, alias="to")
+):
     validate_range(first, last)
     return analysis().accuracy(str(first), str(last))
 
@@ -49,21 +57,51 @@ def accuracy(first: date = Query(FIRST, alias="from"), last: date = Query(LAST, 
 def coverage():
     result = analysis().accuracy(str(FIRST), str(LAST))
     manifest = json.loads((ROOT / "data/manifest.json").read_text(encoding="utf-8"))
-    return {"retrievedAt": manifest["retrievedAt"], "expectedHours": result["expectedHours"],
-            "matchedHours": result["metrics"]["count"], "days": result["days"]}
+    return {
+        "retrievedAt": manifest["retrievedAt"],
+        "expectedHours": result["expectedHours"],
+        "matchedHours": result["metrics"]["count"],
+        "days": result["days"],
+    }
 
 
 @app.get("/api/export")
-def export(first: date = Query(FIRST, alias="from"), last: date = Query(LAST, alias="to")):
+def export(
+    first: date = Query(FIRST, alias="from"), last: date = Query(LAST, alias="to")
+):
     validate_range(first, last)
     output = io.StringIO(newline="")
     writer = csv.writer(output)
-    writer.writerow(["decision_date", "delivery_start_utc", "cutoff_utc", "forecast_mw", "actual_hourly_mean_mw", "forecast_minus_actual_mw", "forecast_publication_utc"])
+    writer.writerow(
+        [
+            "decision_date",
+            "delivery_start_utc",
+            "cutoff_utc",
+            "forecast_mw",
+            "actual_hourly_mean_mw",
+            "forecast_minus_actual_mw",
+            "forecast_publication_utc",
+        ]
+    )
     for key, day in analysis().days.items():
         if str(first) <= key <= str(last):
             for p in day["points"]:
-                writer.writerow([key, p["startTime"], day["cutoff"], p["forecastMw"], p["actualMw"], p["errorMw"], p["publishTime"]])
-    return Response(output.getvalue(), media_type="text/csv", headers={"Content-Disposition": 'attachment; filename="wind-desk.csv"'})
+                writer.writerow(
+                    [
+                        key,
+                        p["startTime"],
+                        day["cutoff"],
+                        p["forecastMw"],
+                        p["actualMw"],
+                        p["errorMw"],
+                        p["publishTime"],
+                    ]
+                )
+    return Response(
+        output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="wind-desk.csv"'},
+    )
 
 
 if (ROOT / "dist").exists():

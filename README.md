@@ -2,7 +2,7 @@
 
 A focused pilot for a Great Britain day-ahead trading team: replay the wind forecast available at the decision cutoff, then measure its error against reported outturn.
 
-**Live application:** deployment URL will be added after production verification.
+**Live application:** pending your Vercel deployment. The connected Vercel team denied project creation (403), and the local CLI has no saved login. See [deployment instructions](docs/deployment.md).
 
 **Public repository:** https://github.com/SohamUser/gidbrivks
 

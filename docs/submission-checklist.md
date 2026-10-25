@@ -1,7 +1,7 @@
 # Submission handoff
 
 - Repository: https://github.com/SohamUser/gidbrivks
-- Application: pending deployment verification
+- Application: pending your Vercel deployment; see `deployment.md`
 - Video: pending your recording and unlisted YouTube upload
 - Submission form: https://forms.cloud.microsoft/r/FTX6K2bbnU
 
