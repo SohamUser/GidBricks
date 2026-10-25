@@ -7,7 +7,9 @@ The repository defines two services in root `vercel.json`:
 | `backend` | `backend/` | FastAPI, entrypoint `app.main:app` | `/api` and `/api/*` |
 | `frontend` | `frontend/` | Vite | All remaining paths |
 
-Services is currently a Vercel Beta feature. Cloud deployment has not been verified.
+Application URL: [Wind Desk](https://pjijxgvh.vercel.app/).
+
+Services is currently a Vercel Beta feature. The supplied public URL has not been independently verified: the latest smoke-test attempt could not resolve its hostname from the verification environment.
 
 ## Routing and bindings
 
@@ -47,13 +49,13 @@ After confirming the service names/exposure and pushing this configuration:
 
 ## Verify the actual deployment
 
-Use the real generated origin:
+Run against the public origin:
 
 ```powershell
-.venv/Scripts/python -B -m backend.tests.runtime_smoke --base-url <ACTUAL_PUBLIC_ORIGIN>
+.venv/Scripts/python -B -m backend.tests.runtime_smoke --base-url https://pjijxgvh.vercel.app
 ```
 
-Open the app signed out and verify forecasts, publication timestamps, actuals, January 31 to February 1 rollover, accuracy filters and CSV. Confirm `/api/health`, `/api/coverage`, `/api/docs` and `/api/openapi.json` reach FastAPI; unknown `/api/*` paths must return API 404s rather than the SPA. Check static assets, root-page refreshes, and mobile layout. Add a live URL to README only after verification.
+Open the app signed out and verify forecasts, publication timestamps, actuals, January 31 to February 1 rollover, accuracy filters and CSV. Confirm `/api/health`, `/api/coverage`, `/api/docs` and `/api/openapi.json` reach FastAPI; unknown `/api/*` paths must return API 404s rather than the SPA. Check static assets, root-page refreshes, and mobile layout.
 
 ## Local verification
 

@@ -4,7 +4,9 @@ A React and Python application for reviewing Elexon wind-generation forecasts av
 
 The analysis covers purchasing decisions made in **January 2026**, with next-day delivery from **January 2 to February 1**.
 
-**Live application:** not yet deployed.
+- **Source code:** [GitHub repository](https://github.com/SohamUser/pjijxgvh)
+- **Video demo:** [Wind Desk — Product Demo and Technical Walkthrough](https://youtu.be/ELFqrQeDc-k)
+- **Live application:** [Wind Desk](https://pjijxgvh.vercel.app/)
 
 ## Features
 
@@ -142,7 +144,7 @@ The live Elexon integration test is opt-in; ordinary tests use deterministic fix
 
 ## Deployment
 
-Vercel Services (Beta) builds `frontend` (Vite) and `backend` (FastAPI) independently under one domain. `/api/*` routes to the backend and all other paths to the frontend. The static browser app uses relative API URLs; there are no server-to-server calls or internal bindings. A public deployment URL is not yet available. See [deployment instructions](docs/deployment.md).
+Vercel Services (Beta) builds `frontend` (Vite) and `backend` (FastAPI) independently under one domain. `/api/*` routes to the backend and all other paths to the frontend. The static browser app uses relative API URLs; there are no server-to-server calls or internal bindings. The application URL is [pjijxgvh.vercel.app](https://pjijxgvh.vercel.app/). See [deployment instructions](docs/deployment.md).
 
 ## AI assistance
 
