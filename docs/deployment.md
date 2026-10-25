@@ -1,6 +1,6 @@
 # Deploy to Vercel
 
-Deployment configuration is prepared but **has not been verified on Vercel**. Earlier project creation returned `403: You don't have permission to create a project`; the CLI fallback reported no existing credentials. The subsequent read-only QA check found no matching project in the connected team. As agreed, account sign-in and deployment are left to the submitter.
+The repository includes Vercel configuration for a static React frontend and Python API. Public deployment has not been verified.
 
 ## CLI route
 
@@ -11,7 +11,7 @@ npx vercel login
 npx vercel --prod
 ```
 
-Select the account/team where you can create projects, link a new project named `gidbrivks`, use the current directory, and keep the framework preset **Other**. The tracked `vercel.json` supplies builds and routes. Do not paste authentication tokens into chat, Git, README, or command arguments.
+Select the account/team where you can create projects, link a new project named `pjijxgvh`, use the current directory, and keep the framework preset **Other**. The tracked `vercel.json` supplies builds and routes. Keep authentication tokens out of source control and command arguments.
 
 The frontend is built with `npm --prefix frontend run build`; Vercel’s Python builder uses `api/index.py`, `requirements.txt` and Python 3.12. The function explicitly includes `backend/app/`, `backend/data/snapshot.json` and `backend/data/manifest.json`. No environment secrets or external database are needed.
 
@@ -34,7 +34,7 @@ Open the production URL in incognito and confirm:
 - Export downloads a CSV with selected publications and actuals.
 - Refreshing the root page works and mobile navigation fits.
 
-Add the verified production URL to README and `docs/submission-checklist.md`, commit, and push. Then record the demo against that deployment and add the unlisted video URL. The application and video URLs cannot be access-verified until they exist.
+Add the production URL to README only after verifying it. The demonstration video remains unpublished.
 
 ## Docker verification
 
@@ -46,4 +46,4 @@ docker compose up --build
 
 Open http://localhost:8000 and repeat the API/coverage checks above. The API reference is http://localhost:8000/api/docs. Stop with `docker compose down`.
 
-The root `requirements.txt` points to `backend/requirements.txt` for Vercel. Keep the Vercel project root at the repository root; `vercel.json` installs/builds the frontend package and publishes `frontend/dist` alongside the Python function. Cloud deployment is still pending account access; this refactor was verified locally and in Docker.
+The root `requirements.txt` points to `backend/requirements.txt` for Vercel. Keep the Vercel project root at the repository root; `vercel.json` installs/builds the frontend package and publishes `frontend/dist` alongside the Python function. Local execution and Docker have been verified; public deployment remains unverified.

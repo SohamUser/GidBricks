@@ -21,7 +21,7 @@ Analysis is built once per worker and cached. Date changes return 24 records; fu
 
 ## Interfaces
 
-The backend reads `DECISION_CUTOFF_LOCAL` (strict HH:MM, default 09:50) when initializing cached analysis. `GET /api/coverage` exposes `decisionCutoffLocal`, and the UI renders that value rather than a fixed label. Decision timestamps and CSV use the same cutoff. See `source-semantics.md` for the unresolved forecast interval-average interpretation.
+The backend reads `DECISION_CUTOFF_LOCAL` (strict HH:MM, default 09:50) when initializing cached analysis. `GET /api/coverage` exposes `decisionCutoffLocal`, and the UI renders that value rather than a fixed label. Decision timestamps and CSV use the same cutoff. See [analytical methodology](analysis.md) for the unresolved forecast interval-average interpretation.
 
 | Endpoint | Contract |
 | --- | --- |
@@ -43,7 +43,7 @@ Invalid, reversed or out-of-window dates return 422. Missing observations are JS
 
 ## Failure handling and operation
 
-Ingestion uses a 60-second timeout, four attempts for transient transport failures/429/5xx, and exponential backoff. Non-retryable HTTP errors fail immediately. All downloads and coverage validation finish before existing files are replaced. Individual files are replaced atomically; the whole file set is not a crash-safe transaction. Keep the checked-in verified snapshot if an ingestion run fails, and check raw-file manifest hashes before publishing refreshed data. See `pipeline-review.md` for completeness limits and MAPE semantics.
+Ingestion uses a 60-second timeout, four attempts for transient transport failures/429/5xx, and exponential backoff. Non-retryable HTTP errors fail immediately. All downloads and coverage validation finish before existing files are replaced. Individual files are replaced atomically; the whole file set is not a crash-safe transaction. Keep the checked-in verified snapshot if an ingestion run fails, and check raw-file manifest hashes before publishing refreshed data. See [analytical methodology](analysis.md) for completeness limits and MAPE semantics.
 
 Frontend requests run in parallel; aborting an obsolete request prevents stale results from overwriting a newer selection. Failed requests show a retry action rather than stale numerical cards. No secrets are needed in the browser or repository.
 
