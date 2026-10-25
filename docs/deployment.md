@@ -1,49 +1,60 @@
-# Deploy to Vercel
+# Vercel Services deployment
 
-The repository includes Vercel configuration for a static React frontend and Python API. Public deployment has not been verified.
+The repository defines two services in root `vercel.json`:
 
-## CLI route
+| Service | Root | Framework | Public paths |
+| --- | --- | --- | --- |
+| `backend` | `backend/` | FastAPI, entrypoint `app.main:app` | `/api` and `/api/*` |
+| `frontend` | `frontend/` | Vite | All remaining paths |
 
-From the repository root, sign in interactively on your own machine:
+Services is currently a Vercel Beta feature. Cloud deployment has not been verified.
 
-```sh
-npx vercel login
-npx vercel --prod
-```
+## Routing and bindings
 
-Select the account/team where you can create projects, link a new project named `pjijxgvh`, use the current directory, and keep the framework preset **Other**. The tracked `vercel.json` supplies builds and routes. Keep authentication tokens out of source control and command arguments.
+The API rewrite comes first and preserves `/api`, which FastAPI already uses. The frontend serves the React app and static assets. All current views use tabs at `/`, so no extra SPA fallback rewrite is needed. There is no additional root `app` service.
 
-The frontend is built with `npm --prefix frontend run build`; Vercel’s Python builder uses `api/index.py`, `requirements.txt` and Python 3.12. The function explicitly includes `backend/app/`, `backend/data/snapshot.json` and `backend/data/manifest.json`. No environment secrets or external database are needed.
+No bindings are declared: this Vite frontend is static, and its JavaScript calls the public API from the browser using relative `/api` URLs. No deployed function calls another service. Internal binding URLs are available only to runtime functions, not to static Vite code or build steps; do not set or expose an internal backend URL in client assets. Docker and standalone Vite retain their separate local proxies.
 
-## Dashboard route
+The backend bundles its snapshot and manifest through service-scoped function configuration. It reads `backend/requirements.txt` and `backend/.python-version`. No API keys or database are required. Optional `DECISION_CUTOFF_LOCAL=09:50` preserves the default UK-local cutoff.
 
-1. Import https://github.com/SohamUser/pjijxgvh into a Vercel team where you have project-creation permission.
-2. Select the **Other** preset and repository root. Leave custom overrides unset; use the checked-in configuration.
-3. Deploy the `main` branch.
-4. In project deployment protection settings, ensure the final production submission URL is publicly accessible.
+## Test locally
 
-## Verify before sharing
-
-Open the production URL in incognito and confirm:
-
-- The decision overview loads without a sign-in page.
-- `/api/health` returns `status: ok` and `snapshotReady: true`.
-- `/api/coverage` returns `matchedHours: 744` and `expectedHours: 744`.
-- January 31 decision shows February 1 delivery.
-- Forecast accuracy shows approximately 2,013.01 MW MAE and +1,729.93 MW bias.
-- Export downloads a CSV with selected publications and actuals.
-- Refreshing the root page works and mobile navigation fits.
-
-Add the production URL to README only after verifying it. The demonstration video remains unpublished.
-
-## Docker verification
-
-Docker build and startup were verified after the Linux engine was started. The frontend container serves the compiled shadcn UI and proxies to the separate Python API container at http://localhost:8000. To repeat:
+From the repository root:
 
 ```sh
-docker compose up --build
+npx vercel dev --local --listen 3000
 ```
 
-Open http://localhost:8000 and repeat the API/coverage checks above. The API reference is http://localhost:8000/api/docs. Stop with `docker compose down`.
+This starts the Services router without linking or deploying a cloud project. Local Python dependencies are installed into the backend virtual environment. The CLI's Python launcher must be available as `python3`; on Windows an app-execution alias may need correcting. `vercel dev` without `--local` can link to an existing project and pull its environment settings.
 
-The root `requirements.txt` points to `backend/requirements.txt` for Vercel. Keep the Vercel project root at the repository root; `vercel.json` installs/builds the frontend package and publishes `frontend/dist` alongside the Python function. Local execution and Docker have been verified; public deployment remains unverified.
+Verify the running router:
+
+```powershell
+.venv/Scripts/python -B -m backend.tests.runtime_smoke --base-url http://localhost:3000
+```
+
+Standalone local and Docker setup remain documented in README.
+
+## Import in Vercel
+
+After confirming the service names/exposure and pushing this configuration:
+
+1. Import https://github.com/SohamUser/pjijxgvh from `main`.
+2. Keep Root Directory at `./` and choose the **Services** application preset.
+3. Refresh the service detection. Expect only FastAPI `backend` and Vite `frontend`; the suggested root Python `app` is obsolete.
+4. Use the checked-in per-service build settings rather than old top-level Vite build overrides. The frontend installs with `npm ci`, builds with `npm run build`, and outputs `dist` relative to its own root.
+5. Review the plan and environment settings, then deploy when ready.
+
+## Verify the actual deployment
+
+Use the real generated origin:
+
+```powershell
+.venv/Scripts/python -B -m backend.tests.runtime_smoke --base-url <ACTUAL_PUBLIC_ORIGIN>
+```
+
+Open the app signed out and verify forecasts, publication timestamps, actuals, January 31 to February 1 rollover, accuracy filters and CSV. Confirm `/api/health`, `/api/coverage`, `/api/docs` and `/api/openapi.json` reach FastAPI; unknown `/api/*` paths must return API 404s rather than the SPA. Check static assets, root-page refreshes, and mobile layout. Add a live URL to README only after verification.
+
+## Local verification
+
+Vercel CLI 65.2.0 detected exactly these two services. The local Services router passed the HTTP endpoint/schema smoke checks, preserved JavaScript/SVG content types, and rendered the real dashboard. The default Windows `python3` Store alias initially prevented FastAPI startup; the successful check used a temporary ignored launcher pointing to the installed Python. No system Python settings were changed. Backend tests (30 passed, one live test skipped), frontend tests (five passed), the frontend production build, and Compose configuration validation also passed. Cloud function packaging and public access remain unverified until an actual deployment is tested.

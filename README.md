@@ -42,11 +42,10 @@ backend/
   tests/                    Analytical, API and integration tests
   Dockerfile                Python API image
   requirements.txt          Backend dependencies
-api/index.py                Vercel Python adapter
-requirements.txt            Vercel dependency entry point
+  .python-version           Python version for the backend service
 docker-compose.yml          Frontend and backend services
 .env.example                Optional local configuration
-vercel.json                 Vercel build and routing configuration
+vercel.json                 Two-service Vercel build and routing configuration
 docs/                       Architecture, analysis and deployment guides
 ```
 
@@ -143,7 +142,7 @@ The live Elexon integration test is opt-in; ordinary tests use deterministic fix
 
 ## Deployment
 
-Vercel configuration is included for the React frontend and Python backend. A public deployment URL is not yet available. See [deployment instructions](docs/deployment.md).
+Vercel Services (Beta) builds `frontend` (Vite) and `backend` (FastAPI) independently under one domain. `/api/*` routes to the backend and all other paths to the frontend. The static browser app uses relative API URLs; there are no server-to-server calls or internal bindings. A public deployment URL is not yet available. See [deployment instructions](docs/deployment.md).
 
 ## AI assistance
 

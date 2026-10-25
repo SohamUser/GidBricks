@@ -1,2 +1,0 @@
-# Vercel's root Python adapter; backend owns the dependency list.
--r backend/requirements.txt

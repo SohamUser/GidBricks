@@ -47,7 +47,7 @@ Ingestion uses a 60-second timeout, four attempts for transient transport failur
 
 Frontend requests run in parallel; aborting an obsolete request prevents stale results from overwriting a newer selection. Failed requests show a retry action rather than stale numerical cards. No secrets are needed in the browser or repository.
 
-Vercel deployment uses a static frontend plus a Python function; Docker uses separate non-root Nginx and FastAPI containers. The backend health check initializes the cached analysis; coverage tests separately require complete pilot data. To roll back, redeploy the prior Git commit together with its snapshot. Source refresh and redeployment are manual for this pilot.
+Vercel Services defines a static Vite `frontend` and FastAPI `backend`, with public `/api/*` routing evaluated before the frontend catch-all; Docker uses separate non-root Nginx and FastAPI containers. The backend health check initializes the cached analysis; coverage tests separately require complete pilot data. To roll back, redeploy the prior Git commit together with its snapshot. Source refresh and redeployment are manual for this pilot.
 
 ## Next work only if the pilot expands
 
@@ -60,3 +60,9 @@ The frontend package owns its dependencies, Vite/Tailwind/shadcn configuration, 
 Compose exposes the UI on port 8000 and the backend on port 8001. Nginx preserves the `/api` path when proxying to the backend service's internal port 8000. Development Vite uses the same path contract. No CORS configuration is needed because browser requests remain on the frontend origin.
 
 Run backend tests from the root with `.venv/Scripts/python -m unittest discover -s backend/tests -t backend -v`, or from `backend/` with `python -m unittest discover -s tests -v` in an activated environment. Build the frontend with `npm --prefix frontend run build`.
+
+## Vercel service routing
+
+`frontend` builds from `frontend/`; `backend` loads `app.main:app` from `backend/`. FastAPI already defines the `/api` prefix, which the public service rewrite preserves. All frontend views use tab state at `/`; no additional fallback rewrite is configured, preserving asset delivery. There is no root Python adapter service.
+
+The frontend is static: browser requests to relative `/api/*` go through public ingress, not a runtime server-to-server call. No bindings or internal-only services are needed. Bindings are only available to server-side functions at runtime; they must not be baked into Vite assets. Docker keeps its separate Nginx-to-backend DNS proxy, and standalone Vite keeps its local development proxy. These are local execution paths, not Vercel function calls.
