@@ -6,6 +6,7 @@ Verified on October 25, 2026 against the bundled Elexon snapshot.
 | --- | --- |
 | Analytical and API suite | 8 tests passed |
 | Real-data coverage | 744/744 hourly pairs, all 31 decision days |
+| Raw provenance | All 69 raw-response SHA-256 checksums match the manifest |
 | No-lookahead | Every selected publication is at/before its decision cutoff |
 | Month-end | January 31 decision maps to February 1 delivery |
 | CSV | One decision exports 24 records plus header |
@@ -14,6 +15,8 @@ Verified on October 25, 2026 against the bundled Elexon snapshot.
 | Browser data flow | Local browser → FastAPI → snapshot → charts and metrics verified |
 | UI interactions | Actual overlay, accuracy navigation, CSV and responsive layout checked |
 | Mobile | 390px viewport, no document horizontal overflow |
+| Drill-down | January 27 ranked miss opens January 28 delivery with actuals enabled |
+| Public repository access | README and code visible in an isolated signed-out browser context |
 | Compose | `docker compose config --quiet` passed |
 | Container execution | Not verified: Docker Linux engine unavailable |
 | Production deployment | Not completed: Vercel 403; CLI not signed in; user requested instructions |
