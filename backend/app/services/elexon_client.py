@@ -1,15 +1,15 @@
-"""Download auditable Elexon snapshots. Run: python -m scripts.fetch_data."""
+"""Download auditable Elexon snapshots. Run: python -m backend.app.services.elexon_client."""
 
 import hashlib
 import json
 import time
 from datetime import date, datetime, timedelta, timezone
-from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
-ROOT = Path(__file__).resolve().parents[1]
+from ..config import DATA_DIR
+
 BASE = "https://data.elexon.co.uk/bmrs/api/v1/datasets"
 
 
@@ -30,7 +30,7 @@ def fetch(url):
 
 
 def main():
-    raw_dir = ROOT / "data" / "raw"
+    raw_dir = DATA_DIR / "raw"
     raw_dir.mkdir(parents=True, exist_ok=True)
     manifest = {"retrievedAt": datetime.now(timezone.utc).isoformat(), "requests": []}
     combined = {"WINDFOR": [], "FUELHH": []}
@@ -70,10 +70,10 @@ def main():
             )
             print(f"{dataset} {day}: {len(rows)} rows", flush=True)
             day += timedelta(days=1)
-    (ROOT / "data" / "snapshot.json").write_text(
+    (DATA_DIR / "snapshot.json").write_text(
         json.dumps(combined, separators=(",", ":")), encoding="utf-8"
     )
-    (ROOT / "data" / "manifest.json").write_text(
+    (DATA_DIR / "manifest.json").write_text(
         json.dumps(manifest, indent=2), encoding="utf-8"
     )
 

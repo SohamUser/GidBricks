@@ -29,8 +29,9 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { number, shortDate, tooltipStyle, ErrorMetrics } from "./shared";
-import type { Accuracy } from "./types";
+import { number, shortDate, tooltipStyle } from "../lib/presentation";
+import { ErrorMetrics } from "../components/Metric";
+import type { Accuracy } from "../types";
 
 export default function AccuracyView({
   accuracy,

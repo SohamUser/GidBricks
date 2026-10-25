@@ -6,7 +6,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { Coverage } from "./types";
+import type { Coverage } from "../types";
 
 export default function MethodologyView({
   coverage,

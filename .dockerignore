@@ -1,9 +1,0 @@
-.git
-.venv
-node_modules
-dist
-.vercel
-data/raw
-tests
-docs
-__pycache__

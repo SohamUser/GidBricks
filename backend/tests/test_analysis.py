@@ -1,7 +1,8 @@
 import math
 import unittest
 
-from backend.analysis import Analysis, index_rows, metrics
+from app.services.forecast_selection import Analysis, index_rows
+from app.services.accuracy import metrics
 
 
 def forecast(value, published="2026-01-01T09:50:00Z", start="2026-01-02T00:00:00Z"):

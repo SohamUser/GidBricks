@@ -3,33 +3,32 @@ import io
 import json
 from datetime import date
 from functools import lru_cache
-from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import Response
-from fastapi.staticfiles import StaticFiles
 
-from backend.analysis import Analysis, FIRST, LAST
-
-ROOT = Path(__file__).resolve().parents[1]
-app = FastAPI(
-    title="Wind Desk",
-    version="1.0.0",
-    docs_url="/api/docs",
-    openapi_url="/api/openapi.json",
-    redoc_url=None,
+from ..config import DATA_DIR, FIRST, LAST
+from ..services.forecast_selection import Analysis
+from ..schemas.responses import (
+    AccuracyResponse,
+    CoverageResponse,
+    DecisionResponse,
+    HealthResponse,
 )
+
+router = APIRouter(prefix="/api")
 
 
 @lru_cache(maxsize=1)
 def analysis():
     try:
         return Analysis(
-            json.loads((ROOT / "data/snapshot.json").read_text(encoding="utf-8"))
+            json.loads((DATA_DIR / "snapshot.json").read_text(encoding="utf-8"))
         )
     except FileNotFoundError:
         raise HTTPException(
-            503, "Historical snapshot unavailable. Run python -m scripts.fetch_data."
+            503,
+            "Historical snapshot unavailable. Run python -m backend.app.services.elexon_client.",
         )
 
 
@@ -40,18 +39,18 @@ def validate_range(first, last):
         )
 
 
-@app.get("/api/health")
+@router.get("/health", response_model=HealthResponse)
 def health():
-    return {"status": "ok", "snapshotReady": (ROOT / "data/snapshot.json").exists()}
+    return {"status": "ok", "snapshotReady": (DATA_DIR / "snapshot.json").exists()}
 
 
-@app.get("/api/decision")
+@router.get("/decision", response_model=DecisionResponse)
 def decision(date: date = Query(...)):
     validate_range(date, date)
     return analysis().days[str(date)]
 
 
-@app.get("/api/accuracy")
+@router.get("/accuracy", response_model=AccuracyResponse)
 def accuracy(
     first: date = Query(FIRST, alias="from"), last: date = Query(LAST, alias="to")
 ):
@@ -59,10 +58,10 @@ def accuracy(
     return analysis().accuracy(str(first), str(last))
 
 
-@app.get("/api/coverage")
+@router.get("/coverage", response_model=CoverageResponse)
 def coverage():
     result = analysis().accuracy(str(FIRST), str(LAST))
-    manifest = json.loads((ROOT / "data/manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads((DATA_DIR / "manifest.json").read_text(encoding="utf-8"))
     return {
         "retrievedAt": manifest["retrievedAt"],
         "expectedHours": result["expectedHours"],
@@ -71,7 +70,7 @@ def coverage():
     }
 
 
-@app.get("/api/export")
+@router.get("/export")
 def export(
     first: date = Query(FIRST, alias="from"), last: date = Query(LAST, alias="to")
 ):
@@ -108,7 +107,3 @@ def export(
         media_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="wind-desk.csv"'},
     )
-
-
-if (ROOT / "dist").exists():
-    app.mount("/", StaticFiles(directory=ROOT / "dist", html=True), name="frontend")

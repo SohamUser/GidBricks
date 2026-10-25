@@ -48,7 +48,7 @@ Record the browser at approximately 1440×900, hide unrelated tabs, and rehearse
 
 ### 5:15–6:30 — Analytical correctness
 
-**Screen:** `backend/analysis.py`, selection loop and hourly actual pair.
+**Screen:** `backend/app/services/forecast_selection.py`, selection loop and hourly actual pair.
 
 “Forecast selection is per target hour, constrained by publication time at or before the original decision cutoff. We verified the real response cadence: WINDFOR is hourly. FUELHH is half-hourly, so both halves are required and averaged. Missing observations stay missing. Energy is the sum of hourly average MW over one-hour intervals. Actuals use the latest retrieved publication; identical duplicates collapse and conflicting values at the same publication fail visibly.”
 
@@ -56,7 +56,7 @@ Record the browser at approximately 1440×900, hide unrelated tabs, and rehearse
 
 ### 6:30–7:25 — Code and API
 
-**Screen:** `backend/main.py`, frontend view files, browser network or `/api/decision`.
+**Screen:** `backend/app/api/routes.py`, frontend view files, browser network or `/api/decision`.
 
 “The API exposes decisions, accuracy, coverage and CSV. Dates are validated at the boundary. The analytical module is independent of FastAPI, making the important rules easy to test. The frontend has separate decision, accuracy and methodology views with typed response shapes. Requests are parallel and obsolete requests are aborted. CSV uses the same backend calculation path as the UI.”
 
@@ -64,7 +64,7 @@ Record the browser at approximately 1440×900, hide unrelated tabs, and rehearse
 
 **Screen:** Run tests and show Dockerfile and Vercel config.
 
-“Nine focused tests cover cutoff inclusion and exclusion, missing data, averaging, revisions, duplicate conflicts, formulas, aggregation, date validation and export. Integration tests assert all 744 real-data pairs and check every selected publication against its cutoff. The frontend passes TypeScript and its production build. The dependency audit is clear. Docker builds React in one stage and runs FastAPI as a non-root user in the final image. Vercel hosts static assets and the Python API.”
+“Nine focused tests cover cutoff inclusion and exclusion, missing data, averaging, revisions, duplicate conflicts, formulas, aggregation, date validation and export. Integration tests assert all 744 real-data pairs and check every selected publication against its cutoff. The frontend passes TypeScript and its production build. The dependency audit is clear. Docker runs a separate Nginx frontend and FastAPI backend, both as non-root users. Vercel configuration builds the frontend package and routes API requests to its Python adapter.”
 
 **Recording note:** Docker build, healthy startup and the browser-to-container flow have now been verified. Show the running container and `/api/docs` if time permits.
 

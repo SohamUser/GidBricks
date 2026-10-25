@@ -1,26 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
-    },
-    {
-      "src": "api/index.py",
-      "use": "@vercel/python",
-      "config": {
-        "includeFiles": [
-          "backend/**",
-          "data/snapshot.json",
-          "data/manifest.json"
-        ]
-      }
+  "framework": null,
+  "installCommand": "npm --prefix frontend ci",
+  "buildCommand": "npm --prefix frontend run build",
+  "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "backend/{app/**,data/snapshot.json,data/manifest.json}",
+      "excludeFiles": "backend/**/__pycache__/**"
     }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/index.py" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  },
+  "rewrites": [
+    {"source": "/api/:path*", "destination": "/api/index"},
+    {"source": "/((?!api/).*)", "destination": "/index.html"}
   ]
 }

@@ -10,53 +10,83 @@ A focused pilot for a Great Britain day-ahead trading team: replay the wind fore
 
 ## Run with Docker
 
-Requirements: Docker Desktop with the Linux engine running, or Docker Engine with Compose.
+Requirements: Docker Desktop with the Linux engine running, or Docker Engine with Compose. From the repository root:
 
 ```sh
-docker compose up --build
+docker compose up --build -d
 ```
 
-Open http://localhost:8000. The image includes the verified historical snapshot; no API key or network access is required at runtime. The same FastAPI application serves both the API and compiled React frontend. Stop with `docker compose down`.
+- Application: http://localhost:8000
+- API reference through the application: http://localhost:8000/api/docs
+- Direct backend: http://localhost:8001/api/health
+
+Compose starts two independent, non-root containers. The frontend builds React and serves it with Nginx; requests under `/api` are proxied to FastAPI. The backend includes the verified historical snapshot and needs no API key or network access at runtime. Stop both with `docker compose down`.
+
+Optional host port overrides are documented in `.env.example`. Copy it to `.env` to change them. If replacing the previous single-container setup, use `docker compose up --build -d --remove-orphans` once to remove the retired `app` service.
 
 ## Run locally
 
-Use Python 3.12+ and Node.js 22.12+ (or 24).
+Use Python 3.12+ and Node.js 22.12+ (or 24). These commands run from the repository root:
 
 ```sh
 python -m venv .venv
 # Windows PowerShell
-.venv/Scripts/python -m pip install -r requirements.txt
-.venv/Scripts/python -m uvicorn backend.main:app --reload
+.venv/Scripts/python -m pip install -r backend/requirements.txt
+.venv/Scripts/python -m uvicorn backend.app.main:app --reload --port 8001
 ```
 
-On macOS/Linux, substitute `.venv/bin/python` for `.venv/Scripts/python`.
+On macOS/Linux, substitute `.venv/bin/python` for `.venv/Scripts/python`. Alternatively, from `backend/`, the application entrypoint is `app.main:app`.
 
 In a second terminal:
 
 ```sh
-npm ci
-npm run dev
+npm --prefix frontend ci
+npm --prefix frontend run dev
 ```
 
-Open the Vite URL printed in the terminal. Vite proxies `/api` to port 8000. For the production-style local app, run `npm run build`, restart FastAPI without `--reload`, and open http://localhost:8000.
+Open the Vite URL printed in the terminal, normally http://127.0.0.1:5173. Its `/api` proxy targets port 8001. `VITE_API_PROXY_TARGET` in the root `.env` can override this development target. You can also run Vite against the Docker backend while Compose is running.
 
 ## Repository structure
 
-| Path | Purpose |
-| --- | --- |
-| `frontend/` | React shell, separate decision/accuracy/methodology views, shared presentation helpers, API types, responsive styles |
-| `frontend/components/ui/`, `components.json` | Official shadcn/ui source components and registry configuration |
-| `public/` | Static wordmark favicon; Source Sans 3 fonts are bundled from Fontsource |
-| `backend/analysis.py` | Pure timestamp normalization, as-of forecast selection, interval alignment and metrics |
-| `backend/main.py` | Read-only FastAPI endpoints, input validation, CSV export and local static serving |
-| `scripts/fetch_data.py` | Bounded Elexon downloads with timeouts, retry/backoff, raw responses and checksums |
-| `data/raw/` | Original Elexon JSON responses for audit and reproducibility |
-| `data/snapshot.json` | Combined snapshot used by the backend |
-| `data/manifest.json` | Retrieval timestamp, request URLs, row counts and SHA-256 checksums |
-| `tests/` | Analytical fixtures, boundary checks and integration tests against the real snapshot |
-| `docs/` | Architecture, verified results, demo narration and submission checklist |
-| `api/index.py`, `vercel.json` | Vercel Python function entrypoint and static/API routing |
-| `Dockerfile`, `compose.yaml` | Multi-stage React build and non-root Python runtime |
+```text
+frontend/
+  src/
+    App.tsx                   Application shell and view state
+    main.tsx                  React entrypoint
+    components/               Shared metric components and shadcn/ui
+    pages/                    Decision, accuracy and methodology views
+    services/windApi.ts       HTTP requests and error handling
+    types/index.ts            Frontend API response types
+    lib/                      Formatting and class-name helpers
+    styles.css                Theme tokens and page layout
+  public/                     Favicon
+  Dockerfile                  React build + non-root Nginx image
+  nginx.conf                  Static serving and backend proxy
+  package.json                Frontend dependencies and scripts
+  components.json             shadcn registry configuration
+backend/
+  app/
+    main.py                   FastAPI application setup
+    config.py                 Fixed pilot dates and data path
+    api/routes.py             Read-only API endpoints and CSV export
+    services/
+      elexon_client.py        Offline downloads and provenance manifest
+      forecast_selection.py  Timestamp normalization and as-of selection
+      accuracy.py            Error metrics and pair-weighted summaries
+    schemas/responses.py      Validated API response contracts
+  data/                       Snapshot, raw Elexon responses and checksums
+  tests/                      Analytical and API tests
+  Dockerfile                  Non-root Python API image
+  requirements.txt            Backend dependencies
+api/index.py                  Small Vercel adapter, not application logic
+requirements.txt              Vercel dependency pointer to backend requirements
+docker-compose.yml            Starts frontend and backend together
+.env.example                  Optional local configuration
+docs/                         Architecture, analysis, demo and submission guide
+vercel.json                   Frontend build and Python function routing
+```
+
+The root Vercel adapter and dependency pointer are deployment compatibility files. Frontend and backend dependency definitions remain in their own directories.
 
 ## Decision and analysis rules
 
@@ -93,19 +123,19 @@ Only these Elexon endpoints are used:
 - Their request contract was checked against the [official OpenAPI schema](https://data.elexon.co.uk/swagger/v1/swagger.json).
 
 ```sh
-python -m scripts.fetch_data
+python -m backend.app.services.elexon_client
 ```
 
 The script downloads December 25–January 31 forecast publications and January 2–February 1 actuals in daily batches. Seven pre-January days provide lookback for the first decision. Full selected forecast coverage was verified. Refresh requires internet access; restart the API after replacing its snapshot because the analysis is cached per process.
 
-Raw data is retained for inspection, but only the combined snapshot and manifest are bundled in the Docker runtime and Python deployment. No request to Elexon is made when a user changes dates.
+Raw data is retained for inspection, but only the combined snapshot and manifest are bundled in the Docker runtime and Python deployment. No request to Elexon is made when a user changes dates. All retained files live under `backend/data/`.
 
 ## Tests and deployment
 
 ```sh
-.venv/Scripts/python -m unittest discover -s tests -v
-npm run build
-npm audit
+.venv/Scripts/python -m unittest discover -s backend/tests -t backend -v
+npm --prefix frontend run build
+npm --prefix frontend audit
 ```
 
 The tests cover no-lookahead selection, exact cutoff inclusion, independent hourly selection, actual averaging, missing intervals, duplicates/conflicts, revision ordering, metric formulas, weighted aggregation, invalid dates, CSV and month-end rollover. Real-snapshot tests deliberately require complete coverage; a changed snapshot should trigger review rather than silently degrade the pilot.
@@ -116,7 +146,7 @@ The latest verification passed **9 tests**, including the application API refere
 
 The UI uses official **shadcn/ui** components with Radix primitives and Tailwind v4. Navy provides structure, teal identifies forecasts, and amber identifies retrospective actuals and bias. The header is a text wordmark; icons are limited to export and previous/next actions. Source Sans 3 is bundled locally, so the core dashboard needs no external font or image requests. See [design decisions and skill sources](docs/design.md).
 
-Deploy the repository to Vercel under the **Other** framework preset. The checked-in configuration builds Vite to `dist` and routes `/api/*` to the Python entrypoint. Disable deployment authentication for the public submission URL, then check it in an incognito session. Deployment is separate from Docker: Vercel uses its Python runtime, while Docker supports reproducible local execution.
+Deploy the repository to Vercel under the **Other** framework preset. The checked-in configuration builds Vite to `frontend/dist` and routes `/api/*` to the Python entrypoint. Disable deployment authentication for the public submission URL, then check it in an incognito session. Deployment is separate from Docker: Vercel uses its Python runtime, while Docker supports reproducible local execution.
 
 ## Deliberate limits
 

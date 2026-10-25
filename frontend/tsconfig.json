@@ -12,7 +12,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "baseUrl": ".",
-    "paths": { "@/*": ["./frontend/*"] }
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["frontend"]
+  "include": ["src"]
 }

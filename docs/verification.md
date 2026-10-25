@@ -21,13 +21,19 @@ Verified on October 25, 2026 against the bundled Elexon snapshot.
 | Date-range filter | January 15–31 renders 408/408 matched hours and updates CSV range |
 | Error recovery | Out-of-window date shows the API validation message and removes stale cards; selecting a valid date restores data |
 | Browser console | Fresh production-container page has no unexpected console warnings or errors |
-| Container identity | `uid=1000(appuser)`; runtime is non-root |
+| Container identity | Frontend `uid=101(nginx)` and backend `uid=1000(appuser)`; both non-root |
 | Theme and typography | Navy/teal/amber semantic tokens; local Source Sans 3 fonts; no header logo icon |
 | Compose | `docker compose config --quiet` passed |
-| Container execution | Passed: image built, non-root container healthy, UI and API served on port 8000 |
+| Container execution | Passed: independent frontend and backend images built; both containers healthy; UI on 8000 and backend on 8001 |
 | Production deployment | Not completed: Vercel 403; CLI not signed in; user requested instructions |
 | Video and submission | User-owned; pending |
 
 The production build emits a bundle-size advisory: the charting-inclusive JavaScript bundle is approximately 635 KB before compression, 197 KB gzip. This small pilot uses Recharts and official shadcn/Radix controls. Build succeeds; no performance claim is made beyond local functional verification.
 
 The installed Starlette test client emits an httpx deprecation warning, but all tests pass. This is a tooling warning, not an application error.
+
+## Directory reorganization
+
+Frontend source, package manifest, lockfile and build tooling now live under `frontend/`. Python routes, schemas, services, tests and the data snapshot live under `backend/`. The root Compose file starts both services. Root Vercel compatibility files are documented in README.
+
+The nine tests pass using `.venv/Scripts/python -m unittest discover -s backend/tests -t backend -v`. The frontend production build passes using `npm --prefix frontend run build`. The snapshot is byte-identical to the pre-refactor Git version and all 69 raw response checksums still match. The root Vercel adapter imports successfully; cloud deployment remains pending.

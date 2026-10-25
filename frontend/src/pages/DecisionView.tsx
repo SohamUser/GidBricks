@@ -30,14 +30,9 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table";
-import {
-  number,
-  shortDate,
-  tooltipStyle,
-  Metric,
-  ErrorMetrics,
-} from "./shared";
-import type { Decision } from "./types";
+import { number, shortDate, tooltipStyle } from "../lib/presentation";
+import { Metric, ErrorMetrics } from "../components/Metric";
+import type { Decision } from "../types";
 
 export default function DecisionView({
   decision,

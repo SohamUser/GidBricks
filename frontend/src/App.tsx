@@ -1,3 +1,4 @@
+import { loadDashboard } from "./services/windApi";
 import { useEffect, useState } from "react";
 import { Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,10 +8,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import DecisionView from "./DecisionView";
-import AccuracyView from "./AccuracyView";
-import MethodologyView from "./MethodologyView";
-import { shortDate } from "./shared";
+import DecisionView from "./pages/DecisionView";
+import AccuracyView from "./pages/AccuracyView";
+import MethodologyView from "./pages/MethodologyView";
+import { shortDate } from "./lib/presentation";
 import type { Accuracy, Coverage, Decision } from "./types";
 
 type View = "decision" | "accuracy" | "methodology";
@@ -37,19 +38,6 @@ const views: Record<
       "Understand what the pilot measures and how each result is calculated.",
   },
 };
-
-async function get<T>(url: string, signal: AbortSignal): Promise<T> {
-  const response = await fetch(url, { signal });
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(
-      typeof body?.detail === "string"
-        ? body.detail
-        : `Request failed (${response.status}). Check the selected dates and try again.`,
-    );
-  }
-  return response.json();
-}
 
 function LoadingView() {
   return (
@@ -81,14 +69,7 @@ export default function App() {
     const controller = new AbortController();
     setLoading(true);
     setError("");
-    Promise.all([
-      get<Decision>(`/api/decision?date=${date}`, controller.signal),
-      get<Accuracy>(
-        `/api/accuracy?from=${range.from}&to=${range.to}`,
-        controller.signal,
-      ),
-      get<Coverage>("/api/coverage", controller.signal),
-    ])
+    loadDashboard(date, range, controller.signal)
       .then(([day, score, source]) => {
         setDecision(day);
         setAccuracy(score);

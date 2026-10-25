@@ -35,6 +35,6 @@ The old sidebar consumed chart space and repeated the navigation context. Horizo
 
 ## Component source and skills
 
-Controls come from the official shadcn/ui registry, checked into `frontend/components/ui/`. Tailwind v4 and semantic CSS variables apply the palette consistently. Custom page CSS handles layout and chart presentation; component behavior remains in the upstream primitives.
+Controls come from the official shadcn/ui registry, checked into `frontend/src/components/ui/`. Tailwind v4 and semantic CSS variables apply the palette consistently. Custom page CSS handles layout and chart presentation; component behavior remains in the upstream primitives.
 
 Reviewed guidance: [Anthropic frontend-design](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md), [official shadcn skill](https://github.com/shadcn-ui/ui/blob/main/skills/shadcn/SKILL.md), and [Vite installation](https://ui.shadcn.com/docs/installation/vite). Changes preserve the Elexon-only analytical scope, cutoff rules, and explicit retrospective labeling.

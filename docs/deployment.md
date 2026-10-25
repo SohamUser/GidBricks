@@ -13,7 +13,7 @@ npx vercel --prod
 
 Select the account/team where you can create projects, link a new project named `gidbrivks`, use the current directory, and keep the framework preset **Other**. The tracked `vercel.json` supplies builds and routes. Do not paste authentication tokens into chat, Git, README, or command arguments.
 
-The frontend is built with `npm run build`; Vercel’s Python builder uses `api/index.py`, `requirements.txt` and Python 3.12. The function explicitly includes `backend/`, `data/snapshot.json` and `data/manifest.json`. No environment secrets or external database are needed.
+The frontend is built with `npm --prefix frontend run build`; Vercel’s Python builder uses `api/index.py`, `requirements.txt` and Python 3.12. The function explicitly includes `backend/app/`, `backend/data/snapshot.json` and `backend/data/manifest.json`. No environment secrets or external database are needed.
 
 ## Dashboard route
 
@@ -38,10 +38,12 @@ Add the verified production URL to README and `docs/submission-checklist.md`, co
 
 ## Docker verification
 
-Docker build and startup were verified after the Linux engine was started. The container serves the compiled shadcn UI and Python API at http://localhost:8000. To repeat:
+Docker build and startup were verified after the Linux engine was started. The frontend container serves the compiled shadcn UI and proxies to the separate Python API container at http://localhost:8000. To repeat:
 
 ```sh
 docker compose up --build
 ```
 
 Open http://localhost:8000 and repeat the API/coverage checks above. The API reference is http://localhost:8000/api/docs. Stop with `docker compose down`.
+
+The root `requirements.txt` points to `backend/requirements.txt` for Vercel. Keep the Vercel project root at the repository root; `vercel.json` installs/builds the frontend package and publishes `frontend/dist` alongside the Python function. Cloud deployment is still pending account access; this refactor was verified locally and in Docker.

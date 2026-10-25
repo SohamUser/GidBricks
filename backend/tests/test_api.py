@@ -1,6 +1,6 @@
 import unittest
 from fastapi.testclient import TestClient
-from backend.main import app
+from app.main import app
 
 
 class ApiTests(unittest.TestCase):
@@ -41,4 +41,11 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(schema.status_code, 200)
         self.assertIn("/api/decision", schema.json()["paths"])
         self.assertIn("/api/accuracy", schema.json()["paths"])
+        self.assertIn("DecisionResponse", schema.json()["components"]["schemas"])
+        self.assertEqual(
+            schema.json()["paths"]["/api/decision"]["get"]["responses"]["200"][
+                "content"
+            ]["application/json"]["schema"]["$ref"],
+            "#/components/schemas/DecisionResponse",
+        )
         self.assertEqual(self.client.get("/api/docs").status_code, 200)
