@@ -48,7 +48,7 @@ backend/
 docker-compose.yml          Frontend and backend services
 .env.example                Optional local configuration
 vercel.json                 Two-service Vercel build and routing configuration
-docs/                       Architecture, analysis and deployment guides
+docs/                       Architecture and analysis guides
 ```
 
 ## Run with Docker
@@ -144,7 +144,7 @@ The live Elexon integration test is opt-in; ordinary tests use deterministic fix
 
 ## Deployment
 
-Vercel Services (Beta) builds `frontend` (Vite) and `backend` (FastAPI) independently under one domain. `/api/*` routes to the backend and all other paths to the frontend. The static browser app uses relative API URLs; there are no server-to-server calls or internal bindings. The application URL is [pjijxgvh.vercel.app](https://pjijxgvh.vercel.app/). See [deployment instructions](docs/deployment.md).
+Vercel Services (Beta) builds `frontend` (Vite) and `backend` (FastAPI) independently under one domain. `/api/*` routes to the backend and all other paths to the frontend. The static browser app uses relative API URLs; there are no server-to-server calls or internal bindings. The application URL is [pjijxgvh.vercel.app](https://pjijxgvh.vercel.app/).
 
 ## AI assistance
 
