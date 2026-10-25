@@ -59,6 +59,9 @@ export default function DecisionView({
     p.ageHours === null ? [] : [p.ageHours],
   );
   const maxAge = ages.length ? Math.max(...ages) : null;
+  const cutoffTime = new Date(decision.cutoff).toLocaleTimeString("en-GB", {
+    timeZone: "Europe/London", hour: "2-digit", minute: "2-digit", hour12: false,
+  });
 
   return (
     <>
@@ -72,7 +75,7 @@ export default function DecisionView({
       )}
       <div className="metrics" aria-label="Delivery-day forecast summary">
         <Metric
-          label="Forecast wind energy"
+          label="Estimated forecast wind energy"
           value={
             decision.forecastEnergyMwh === null
               ? null
@@ -81,7 +84,7 @@ export default function DecisionView({
           unit="GWh"
           detail={
             decision.forecastHours === 24
-              ? "Total for the delivery day"
+              ? "Assumes forecast MW represents each hour"
               : `Partial total across ${decision.forecastHours} hours`
           }
         />
@@ -115,8 +118,8 @@ export default function DecisionView({
             <h2>Hourly wind profile</h2>
           </CardTitle>
           <CardDescription>
-            Delivery {shortDate(decision.deliveryDate)} 2026. Average power in
-            MW, shown in GMT.
+            Delivery {shortDate(decision.deliveryDate)} 2026. Power in MW,
+            shown in GMT. Forecasts are assumed representative of each hour.
           </CardDescription>
           <CardAction>
             <div className="actuals-control">
@@ -226,7 +229,7 @@ export default function DecisionView({
           </div>
         </CardContent>
         <CardFooter className="chart-footer">
-          <span>Forecasts published by {shortDate(date)}, 09:50 GMT.</span>
+          <span>Forecasts published by {shortDate(date)}, {cutoffTime} GMT.</span>
           <span>
             {actuals ? "Elexon WINDFOR + FUELHH WIND" : "Elexon WINDFOR"}
           </span>
@@ -277,7 +280,7 @@ export default function DecisionView({
               </div>
               <div>
                 <dt>Selection rule</dt>
-                <dd>Latest publication at or before 09:50</dd>
+                <dd>Latest publication at or before {cutoffTime}</dd>
               </div>
             </dl>
           </CardContent>

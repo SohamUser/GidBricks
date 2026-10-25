@@ -46,6 +46,24 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(result["mapeCount"], 744)
         self.assertEqual(result["mapeExcludedCount"], 0)
 
+    def test_configured_cutoff_is_exposed_to_frontend(self):
+        routes.analysis.cache_clear()
+        try:
+            with patch.dict("os.environ", {"DECISION_CUTOFF_LOCAL": "08:00"}):
+                coverage = self.client.get("/api/coverage").json()
+                self.assertEqual(coverage["decisionCutoffLocal"], "08:00")
+                day = self.client.get("/api/decision?date=2026-01-31").json()
+                self.assertEqual(day["cutoff"], "2026-01-31T08:00:00Z")
+                self.assertTrue(
+                    all(
+                        p["publishTime"] <= day["cutoff"]
+                        for p in day["points"]
+                        if p["publishTime"]
+                    )
+                )
+        finally:
+            routes.analysis.cache_clear()
+
     def test_invalid_snapshot_is_unavailable_including_readiness(self):
         with (
             TemporaryDirectory() as directory,

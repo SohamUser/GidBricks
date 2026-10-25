@@ -1,8 +1,10 @@
 # Focused pipeline correctness review
 
+This is the earlier verification record. The subsequent [source-semantics review](source-semantics.md) adds a configurable cutoff, clarifies that hour-average forecast semantics remain unconfirmed, and records the current tests.
+
 ## Decision contract
 
-January means purchasing decisions on January 1–31, 2026, at a fixed 09:50 Europe/London cutoff. This is a pilot assumption, not a verified client rule, and is not configurable through an endpoint. Delivery is the following calendar day, January 2–February 1 inclusive. The January 31 decision therefore includes February delivery.
+January means purchasing decisions on January 1–31, 2026, at a default 09:50 Europe/London cutoff. This remains a pilot assumption, now configurable at backend startup with `DECISION_CUTOFF_LOCAL`; there is no per-request cutoff override. Delivery is the following calendar day, January 2–February 1 inclusive. The January 31 decision therefore includes February delivery.
 
 All input `startTime` and `publishTime` values must carry an offset. They normalize to UTC; API output uses `Z`. UK local time is GMT throughout this fixed window. This implementation is not a general DST-day calculator.
 

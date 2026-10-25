@@ -1,8 +1,10 @@
 import math
 import unittest
+from unittest.mock import patch
 
 from app.services.forecast_selection import Analysis, index_rows, timestamp
 from app.services.accuracy import metrics
+from app.config import decision_cutoff
 
 
 def forecast(value, published="2026-01-01T09:50:00Z", start="2026-01-02T00:00:00Z"):
@@ -21,6 +23,77 @@ def actual(
 
 
 class AnalysisTests(unittest.TestCase):
+    def setUp(self):
+        environment = patch.dict("os.environ", {"DECISION_CUTOFF_LOCAL": "09:50"})
+        environment.start()
+        self.addCleanup(environment.stop)
+
+    def test_before_exact_and_after_cutoff(self):
+        before = forecast(80, "2026-01-01T09:49:59Z")
+        exact = forecast(90, "2026-01-01T09:50:00Z")
+        after = forecast(999, "2026-01-01T09:50:01Z")
+        for rows, expected in [
+            ([before], 80),
+            ([before, exact], 90),
+            ([before, exact, after], 90),
+            ([after], None),
+        ]:
+            with self.subTest(rows=rows):
+                point = Analysis({"WINDFOR": rows, "FUELHH": []}).days["2026-01-01"][
+                    "points"
+                ][0]
+                self.assertEqual(point["forecastMw"], expected)
+                if expected is not None:
+                    self.assertLessEqual(
+                        timestamp(point["publishTime"]),
+                        timestamp("2026-01-01T09:50:00Z"),
+                    )
+
+    def test_configured_cutoff_changes_selection_without_lookahead(self):
+        snapshot = {
+            "WINDFOR": [
+                forecast(80, "2026-01-01T07:59:59Z"),
+                forecast(90, "2026-01-01T08:00:00Z"),
+                forecast(100, "2026-01-01T08:00:01Z"),
+            ],
+            "FUELHH": [],
+        }
+        model = Analysis(snapshot, cutoff_local="08:00")
+        self.assertEqual(model.days["2026-01-01"]["points"][0]["forecastMw"], 90)
+        self.assertEqual(model.days["2026-01-31"]["cutoff"], "2026-01-31T08:00:00Z")
+        self.assertEqual(model.days["2026-01-31"]["deliveryDate"], "2026-02-01")
+        with patch.dict("os.environ", {"DECISION_CUTOFF_LOCAL": "08:00"}):
+            self.assertEqual(Analysis(snapshot).cutoff_time.hour, 8)
+        self.assertEqual(
+            Analysis(snapshot).days["2026-01-01"]["points"][0]["forecastMw"], 100
+        )
+        for invalid in ["24:00", "9:50", "09:60", "09:50Z", "09:50:00", ""]:
+            with self.subTest(value=invalid), self.assertRaises(ValueError):
+                decision_cutoff(invalid)
+
+    def test_hourly_mapping_requires_both_halves_and_preserves_publication(self):
+        first, second = actual(80), actual(120, "2026-01-02T00:30:00Z")
+        for actuals in [[first], [second], []]:
+            point = Analysis({"WINDFOR": [forecast(100)], "FUELHH": actuals}).days[
+                "2026-01-01"
+            ]["points"][0]
+            self.assertIsNone(point["actualMw"])
+            self.assertIsNone(point["errorMw"])
+        day = Analysis(
+            {
+                "WINDFOR": [forecast(100), forecast(100)],
+                "FUELHH": [first, second, first, second],
+            }
+        ).days["2026-01-01"]
+        self.assertEqual(len(day["points"]), 24)
+        self.assertEqual(day["metrics"]["count"], 1)
+        self.assertEqual(day["points"][0]["publishTime"], "2026-01-01T09:50:00Z")
+        self.assertEqual(day["points"][0]["actualMw"], 100)
+        self.assertEqual(day["metrics"]["mae"], 0)
+        self.assertEqual(day["forecastEnergyMwh"], 100)
+        # A hypothetical constant-MW split has 20 MW MAE, not zero: no silent mapping.
+        self.assertEqual(sum(abs(100 - value) for value in [80, 120]) / 2, 20)
+
     def test_cutoff_and_hourly_alignment(self):
         snapshot = {
             "WINDFOR": [

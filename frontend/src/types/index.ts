@@ -35,6 +35,7 @@ export type Accuracy = {
   byHour: (Metrics & { hour: string })[];
 };
 export type Coverage = {
+  decisionCutoffLocal: string;
   retrievedAt: string;
   expectedHours: number;
   matchedHours: number;

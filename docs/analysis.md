@@ -1,6 +1,6 @@
 # January 2026 analysis
 
-The replay uses January 1–31 purchase decisions at 09:50 GMT, for January 2–February 1 delivery. Each hour uses the latest publication available by the cutoff. Actuals are the mean of the two FUELHH WIND half-hours.
+The results below use the default January 1–31 purchase decisions at 09:50 GMT, for January 2–February 1 delivery. The cutoff is now configurable; changing it requires recomputation rather than reusing these default scores. Each hour uses the latest eligible publication. Actuals are the mean of the two FUELHH WIND half-hours. Forecast representativeness across the hour is an explicit, unconfirmed assumption; see `source-semantics.md`.
 
 ## Findings from the bundled snapshot
 

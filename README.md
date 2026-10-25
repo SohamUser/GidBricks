@@ -8,6 +8,8 @@ A focused pilot for a Great Britain day-ahead trading team: replay the wind fore
 
 **Demo video:** pending recording and unlisted YouTube upload by the submitter. Do not submit the assignment until the video is available. See [the timed demo script](docs/demo-script.md).
 
+Deployment, recording/upload and form submission are **intentionally deferred**. The latest scoped follow-up is [source semantics and cutoff review](docs/source-semantics.md), including the unresolved interval interpretation and manual repository rename.
+
 ## Dashboard and key features
 
 - **Decision overview:** select a January purchasing date, inspect the next-day hourly forecast, energy/peak/minimum/coverage cards and publication provenance. Toggle retrospective actuals, expand the interval table, or export CSV.
@@ -73,8 +75,11 @@ Copy `.env.example` to a local `.env` only if defaults need changing. Replace th
 | `FRONTEND_PORT` | `<AVAILABLE_FRONTEND_HOST_PORT>` | `8000` | Docker frontend host port |
 | `BACKEND_PORT` | `<AVAILABLE_BACKEND_HOST_PORT>` | `8001` | Docker backend host port |
 | `VITE_API_PROXY_TARGET` | `http://127.0.0.1:<BACKEND_HOST_PORT>` | `http://127.0.0.1:8001` | Vite development upstream; restart Vite after changing |
+| `DECISION_CUTOFF_LOCAL` | `<HH:MM>` | `09:50` | Python UK-local purchasing-time assumption; restart backend after changing |
 
 Browser requests remain relative `/api`; Docker uses internal `backend:8000` regardless of host-port overrides. The intended same-origin production configuration needs no API keys or secrets. Production settings and public routing remain unverified. Separate-origin hosting would require an explicit CORS policy.
+
+Compose reads `DECISION_CUTOFF_LOCAL` from the root `.env` and passes it to Python. Standalone Python does not automatically read `.env`: set `$env:DECISION_CUTOFF_LOCAL = '09:50'` in PowerShell before starting Uvicorn (POSIX: `export DECISION_CUTOFF_LOCAL=09:50`). Use exactly `HH:MM`; invalid values make analysis unavailable with 503. The API exposes the configured value in `/api/coverage`; decision timestamps, CSV and dashboard labels use the same configuration. Restart/recreate the backend after changing it, because analysis is cached.
 
 ## Repository structure
 
@@ -122,12 +127,13 @@ The root Vercel adapter and dependency pointer are deployment compatibility file
 ## Decision and analysis rules
 
 - “January decisions” means January 1–31, 2026, with delivery January 2–February 1.
-- The pilot assumes a **09:50 Europe/London** decision cutoff, based on the [GB N2EX auction convention](https://www.nordpoolgroup.com/en/message-center-container/newsroom/exchange-message-list/2020/q4/nord-pool-announces-gb-auction-changes-for-brexit/). All relevant dates are GMT. This is an explicit pilot assumption, not a universal cutoff for every GB auction.
-- The cutoff is fixed in Python, not configurable through the API or UI. Source timestamps must include a timezone and are normalized to UTC; output timestamps use `Z`. January UK local time equals UTC/GMT.
+- The pilot defaults to **09:50 Europe/London**, configurable using `DECISION_CUTOFF_LOCAL`. [Nord Pool's GB product specification](https://www.nordpoolgroup.com/4a3355/globalassets/download-center/rules-and-regulations/product-specifications-gb-valid-from-10-july-23.pdf), sections 1.2 and 3.1, documents 09:50 UK time for its GB auction. The assignment names no auction or exact deadline; applying it to this client remains an assumption, not an assignment requirement or universal GB market rule.
+- Source timestamps must include a timezone and are normalized to UTC; output timestamps use `Z`. January UK local time equals UTC/GMT. Configuration is at backend startup, not per-browser selection.
 - For each delivery hour, select the maximum WINDFOR `publishTime` at or before that decision cutoff. Publication time is an availability proxy; transmission latency is unknown.
-- The actual January WINDFOR data is **hourly**, although FUELHH is half-hourly. Compare the forecast at HH:00 with the mean of FUELHH WIND at HH:00 and HH:30. Require both actual half-hours. No interpolation or fabricated half-hour forecasts.
+- All 22,192 stored January-relevant WINDFOR records target HH:00. The 1,488 FUELHH WIND records target HH:00/HH:30. The [official wind page](https://bmrs.elexon.co.uk/wind-generation) corroborates hourly MW forecasts and comparison with fuel-type outturn. FUELHH is explicitly average MW over 30 minutes; the inspected modern WINDFOR documentation does not establish hour-average versus point/peak power semantics. See the source review for the legacy specification ambiguity.
+- Retain the existing **conditional hourly comparison**: compare forecast HH:00 with the equal-weight mean of actual HH:00 and HH:30, requiring both halves. This assumes the forecast represents the corresponding hour. No interpolation or half-hour duplication is performed; original forecast publication timestamps survive matching.
 - This is an **hourly comparison**, not compliance with a strict 30-minute-output requirement. Hourly averaging can cancel opposite half-hour errors. An agreed mapping of hourly WINDFOR to half-hour delivery intervals is required before claiming half-hour accuracy.
-- Power is MW. Each aligned forecast is treated as the average for the hour beginning at `startTime`; sum hourly values for MWh and divide by 1,000 for GWh. Partial coverage produces explicitly partial totals.
+- Both series are MW, not MWh. Estimated forecast energy assumes constant representative power across the hour: sum MW × 1 hour for MWh, then divide by 1,000 for GWh. It is an assumption-based estimate, not source-supplied energy. Partial coverage produces explicitly partial totals.
 - Error = forecast − actual. Positive error means wind overestimation. MAE = mean absolute error; RMSE = square root of mean squared error; bias = mean signed error. P90 is the nearest-rank 90th percentile of absolute error.
 - Monthly metrics use all matched pairs, not a mean of daily scores. Missing pairs are excluded and counts shown. Zero is a valid observation.
 - The API additionally returns `mape = mean(abs(errorMw) / abs(actualMw)) * 100` using only matched finite, nonzero actuals. `mapeCount` reports included hours; `mapeExcludedCount` counts all expected hours excluded for missing/invalid pairs or zero actuals. Zero actuals still contribute to MAE, RMSE and bias. MAPE is a percentage; the other error metrics are MW. Calculations use unrounded values; display rounding is presentation only.
@@ -178,7 +184,7 @@ npm --prefix frontend audit
 
 The tests cover no-lookahead selection, exact cutoff inclusion, independent hourly selection, actual averaging, missing intervals, duplicates/conflicts, revision ordering, metric formulas, weighted aggregation, invalid dates, CSV and month-end rollover. Real-snapshot tests deliberately require complete coverage; a changed snapshot should trigger review rather than silently degrade the pilot.
 
-The focused correctness suite passed **26 offline tests**, with one live integration test skipped by default. The separate opt-in integration test also passed, making four real Elexon requests. See [pipeline review](docs/pipeline-review.md) for scope, assumptions, limitations and exact commands. Earlier Docker/browser verification is recorded in [verification evidence](docs/verification.md); those containers were not rebuilt for this review.
+The latest scoped follow-up passed **30 offline backend tests**, with one live integration test skipped by default, plus **five frontend tests**. The separate opt-in integration test previously passed four real Elexon requests. See [source review](docs/source-semantics.md) for current results and [pipeline review](docs/pipeline-review.md) for earlier verification. The source-data fixture was not refreshed.
 
 The subsequent [end-to-end QA report](docs/qa-validation.md) records a clean Docker build, working Compose startup, endpoint/schema checks through Docker and Vite, five frontend API-client regression tests, and browser checks of loading, empty, partial, timeout and error/retry states. Dashboard requests time out after 15 seconds. Public deployment remains unverified.
 
@@ -200,7 +206,7 @@ Deploy the repository to Vercel under the **Other** framework preset. The checke
 
 This is a national Elexon wind pilot, not a portfolio optimizer. It includes no demand, price, weather, contracted generation, storage or other fuels. It cannot calculate a client’s procurement volume, savings or reserve requirement. Elexon coverage is Great Britain and should not be presented as all UK wind output. January error distributions are descriptive, not calibrated prediction intervals. No trading actions, authentication, database service, scheduler or machine-learning model are included.
 
-The hourly comparison does not meet a strict 48-half-hour-output requirement; agree a mapping policy before changing resolution or claiming compliance. The 09:50 cutoff is fixed and requires client agreement. Completeness checks cannot detect every valid upstream omission of a newer forecast revision. Snapshot files are replaced individually, not as an all-file crash-safe transaction. Public deployment, video and form submission remain pending. The assignment's 16-hour effort cap has no verified time ledger in this repository.
+The hourly comparison does not meet a strict 48-half-hour-output requirement; confirm source interval semantics and agree a mapping policy before claiming compliance. The configurable cutoff defaults to 09:50 and requires client agreement. Completeness checks cannot detect every valid upstream omission of a newer forecast revision. Snapshot files are replaced individually, not as an all-file crash-safe transaction. Public deployment, video and form submission are deferred. The submitter estimates **4–5 active hours** spent on the assignment; this is self-reported, not independently verified by a time ledger.
 
 ## AI assistance
 

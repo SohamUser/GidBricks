@@ -1,5 +1,7 @@
 # Final submission-readiness review
 
+Historical readiness snapshot: see [source-semantics.md](source-semantics.md) for the later configurable-cutoff change, source evidence and self-reported effort estimate. Deployment, video and form are now intentionally deferred. This file's older test counts and repository-state observations describe that earlier review.
+
 Verdict: **not ready to submit**. Local functionality and verification are in place, but analytical acceptance and external delivery gates remain open. This review changed documentation only; it did not commit, push, rename a repository, deploy, upload media or submit a form.
 
 Publication follow-up: the user subsequently authorized committing and pushing. Code commit `b18a5937e341e06b541a20360ceeee067f21efbf` was successfully pushed to public `main` and verified with `git ls-remote`. The initial dirty-tree observations below describe the review baseline. Remaining deployment, video, naming, analytical acceptance and form gates are unchanged.
@@ -28,7 +30,7 @@ Publication follow-up: the user subsequently authorized committing and pushing. 
 | Final links checked incognito | PARTIAL | Current repository checked in fresh isolated signed-out context; final revision, app and video still pending |
 | Development effort <=16 hours | NOT VERIFIED | No verified total effort ledger; submitter must confirm |
 
-The 09:50 Europe/London cutoff is a fixed pilot assumption, not a verified rule supplied by the client. UTC equals UK GMT in this window. Preserve the explicit hourly policy or agree a defensible mapping before claiming half-hour compliance; do not fabricate intermediate source forecasts.
+The 09:50 Europe/London cutoff remains a pilot assumption, not a rule supplied by the client; it is now configurable through `DECISION_CUTOFF_LOCAL`. UTC equals UK GMT in this window. Preserve the explicit hourly policy or agree a defensible mapping before claiming half-hour compliance; do not fabricate intermediate source forecasts.
 
 ## README coverage
 

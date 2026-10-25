@@ -21,6 +21,8 @@ Analysis is built once per worker and cached. Date changes return 24 records; fu
 
 ## Interfaces
 
+The backend reads `DECISION_CUTOFF_LOCAL` (strict HH:MM, default 09:50) when initializing cached analysis. `GET /api/coverage` exposes `decisionCutoffLocal`, and the UI renders that value rather than a fixed label. Decision timestamps and CSV use the same cutoff. See `source-semantics.md` for the unresolved forecast interval-average interpretation.
+
 | Endpoint | Contract |
 | --- | --- |
 | `GET /api/health` | Snapshot analysis readiness; unusable snapshots return 503 |

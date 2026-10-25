@@ -64,6 +64,7 @@ def coverage():
     result = analysis().accuracy(str(FIRST), str(LAST))
     manifest = json.loads((DATA_DIR / "manifest.json").read_text(encoding="utf-8"))
     return {
+        "decisionCutoffLocal": analysis().cutoff_time.strftime("%H:%M"),
         "retrievedAt": manifest["retrievedAt"],
         "expectedHours": result["expectedHours"],
         "matchedHours": result["metrics"]["count"],

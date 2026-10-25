@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Metrics(BaseModel):
@@ -33,7 +33,9 @@ class DecisionResponse(BaseModel):
     points: list[ForecastPoint]
     metrics: Metrics
     forecastHours: int
-    forecastEnergyMwh: float | None
+    forecastEnergyMwh: float | None = Field(
+        description="Estimated MWh assuming each hourly forecast MW represents its whole hour; source interval-average semantics are unconfirmed."
+    )
     peakMw: float | None
     minMw: float | None
 
@@ -55,6 +57,7 @@ class AccuracyResponse(BaseModel):
 
 
 class CoverageResponse(BaseModel):
+    decisionCutoffLocal: str
     retrievedAt: str
     expectedHours: int
     matchedHours: int

@@ -2,26 +2,31 @@
 
 Status: **not ready to submit**. Checkboxes record verified completion, not planned work.
 
+Current scope explicitly defers deployment, video recording/upload and the form. They remain unchecked below but are not active blockers for this scoped follow-up. Latest methodology, test and effort evidence: [source-semantics.md](source-semantics.md).
+
 ## Links and access
 
-- Repository: https://github.com/SohamUser/GidBricks — verified public in a fresh isolated signed-out browser session. Random anonymous naming remains unresolved.
-- Application: pending deployment; no verified public URL. See `deployment.md`.
-- Video: pending recording and unlisted upload; no verified YouTube URL.
-- Submission form: https://forms.cloud.microsoft/r/FTX6K2bbnU — submission not performed or verified.
+- Repository: https://github.com/SohamUser/GidBricks — configured origin; prior public access verified. GitHub CLI is absent, so no rename was attempted. Suggested random name: `pjijxgvh`; manual steps are in the source review.
+- Application: **deferred**; no verified public URL. See `deployment.md`.
+- Video: **deferred**; no verified YouTube URL.
+- Submission form: https://forms.cloud.microsoft/r/FTX6K2bbnU — **deferred**; no submission performed.
 
 ## Required gates
 
 - [x] Public repository can be opened without signing in.
 - [ ] Repository uses an anonymous name accepted for the assignment; a random name is recommended.
 - [ ] Resolve the hourly-output adaptation against the assignment's half-hour requirement, or obtain explicit acceptance of the limitation.
+- [x] Verify source cadence and MW units; retain conditional hourly analysis because reliable half-hour forecast mapping is not established.
+- [x] Make cutoff configurable, preserve default 09:50, and test boundary eligibility and UI/API metadata.
 - [x] Reviewed source, tests and readiness documentation committed on `main` in `b18a5937e341e06b541a20360ceeee067f21efbf`.
 - [x] Code commit pushed; remote `main` SHA verified as `b18a5937e341e06b541a20360ceeee067f21efbf` before this documentation follow-up.
+- [ ] Review, commit and push the subsequent source-semantics/configurable-cutoff follow-up; the publication checks above describe the earlier code revision.
 - [ ] Deployed frontend and Python backend work on Vercel or Heroku.
 - [ ] Real Elexon-derived forecasts, actuals and metrics load in the public app.
 - [x] Docker setup built without cached application layers and started successfully during QA; services are currently healthy.
 - [x] README contains purpose, dashboard description, architecture/data flow, structure, setup, environment placeholders, tests, sources, formulas, AI disclosure and limits.
 - [ ] README includes the actual verified live URL and final video URL; pending text is not a substitute for these deliverables.
-- [x] Automated tests rerun: 26 backend passed, one live test skipped by default; five frontend tests passed.
+- [x] Automated tests rerun: 30 backend passed, one live test skipped by default; five frontend tests passed.
 - [ ] Unlisted YouTube video recorded, uploaded and processed.
 - [ ] Client presentation measured at no more than five minutes.
 - [ ] Technical explanation measured at no more than five minutes.
@@ -29,7 +34,8 @@ Status: **not ready to submit**. Checkboxes record verified completion, not plan
 - [ ] Repository final revision reopened in incognito after push/rename.
 - [ ] Public app and API tested in incognito, including January 31, actual overlay, accuracy and export.
 - [ ] Final YouTube URL plays in incognito without requiring account access.
-- [ ] Confirm total development effort satisfies the 16-hour cap; no verified effort ledger is present.
+- [x] Submitter supplied an estimate of 4–5 active hours; recorded as self-reported, not independently verified.
+- [ ] Confirm final total effort remains within 16 hours after remaining work; no verified time ledger is present.
 - [ ] Submit all actual verified links and requested details through the form, only after the video is ready.
 - [ ] Verify and retain form-submission confirmation.
 

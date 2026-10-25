@@ -1,10 +1,10 @@
-"""Pure selection and scoring logic; all values are average MW."""
+"""Selection and MW scoring under the explicitly assumed hourly comparison policy."""
 
 import math
 from datetime import datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
-from ..config import FIRST
+from ..config import FIRST, decision_cutoff
 from .accuracy import metrics, summarize_accuracy
 
 
@@ -55,7 +55,8 @@ def index_rows(rows, forecast=False):
 
 
 class Analysis:
-    def __init__(self, snapshot):
+    def __init__(self, snapshot, cutoff_local=None):
+        self.cutoff_time = decision_cutoff(cutoff_local)
         self.forecasts = index_rows(snapshot["WINDFOR"], forecast=True)
         self.actuals = index_rows(snapshot["FUELHH"])
         if any(
@@ -76,7 +77,7 @@ class Analysis:
 
     def decision(self, day):
         cutoff = datetime.combine(
-            day, time(9, 50), ZoneInfo("Europe/London")
+            day, self.cutoff_time, ZoneInfo("Europe/London")
         ).astimezone(timezone.utc)
         delivery = day + timedelta(days=1)
         midnight = datetime.combine(delivery, time(), timezone.utc)

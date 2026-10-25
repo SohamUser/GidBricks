@@ -1,6 +1,8 @@
 services:
   backend:
     build: ./backend
+    environment:
+      DECISION_CUTOFF_LOCAL: "${DECISION_CUTOFF_LOCAL:-09:50}"
     ports:
       - "${BACKEND_PORT:-8001}:8000"
     healthcheck:

@@ -20,9 +20,10 @@ export default function MethodologyView({
           <h2>Replay the original purchase decision</h2>
           <p>
             For each January 1–31 decision, select the latest WINDFOR
-            publication at or before 09:50 Europe/London for every hour of the
+            publication at or before {coverage?.decisionCutoffLocal ?? "the configured cutoff"} Europe/London for every hour of the
             next calendar day. Delivery spans January 2–February 1. All dates in
-            this window use GMT.
+            this window use GMT. The cutoff is a configurable project assumption,
+            not a deadline specified in the assignment.
           </p>
           <p>
             Selection is per target hour. Later publications never fill
@@ -39,9 +40,12 @@ export default function MethodologyView({
             interpolated.
           </p>
           <p>
-            Generation is average power in MW. Each aligned hour contributes MW
-            × 1 hour to MWh; divide by 1,000 for GWh. Incomplete-day energy
-            totals are labeled partial.
+            FUELHH is average power in MW; WINDFOR is an hourly MW forecast whose
+            interval-average definition is not established by the inspected documentation.
+            The comparison assumes each forecast represents its target hour.
+            Estimated energy uses MW × 1 hour; this assumption needs confirmation.
+            Incomplete-day energy totals are labeled partial. Forecasts are not
+            duplicated into half-hours because their within-hour shape is unknown.
           </p>
         </article>
         <article>

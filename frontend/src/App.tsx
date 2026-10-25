@@ -190,7 +190,7 @@ export default function App() {
               <div className="context-value">
                 <span>Purchase cutoff</span>
                 <strong>
-                  09:50 <small>GMT</small>
+                  {coverage?.decisionCutoffLocal ?? "—"} <small>GMT</small>
                 </strong>
               </div>
               <div className="context-value delivery-value">
