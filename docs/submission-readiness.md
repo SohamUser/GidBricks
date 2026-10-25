@@ -2,6 +2,8 @@
 
 Verdict: **not ready to submit**. Local functionality and verification are in place, but analytical acceptance and external delivery gates remain open. This review changed documentation only; it did not commit, push, rename a repository, deploy, upload media or submit a form.
 
+Publication follow-up: the user subsequently authorized committing and pushing. Code commit `b18a5937e341e06b541a20360ceeee067f21efbf` was successfully pushed to public `main` and verified with `git ls-remote`. The initial dirty-tree observations below describe the review baseline. Remaining deployment, video, naming, analytical acceptance and form gates are unchanged.
+
 ## Requirement status
 
 | Requirement | Status | Evidence / remaining work |
@@ -18,7 +20,7 @@ Verdict: **not ready to submit**. Local functionality and verification are in pl
 | Vercel or Heroku application with backend | FAIL / pending deliverable | Vercel configuration exists; no matching project in connected team or verified public URL |
 | README | PARTIAL | All requested descriptive/setup/analytical/disclosure sections present; actual app and video URLs unavailable |
 | Public GitHub repository | PARTIAL | Existing repository is public and signed-out accessible; random anonymous name not established |
-| Correct final source committed/pushed | FAIL | Public main and local HEAD both e51bba44abc9edb5aee91b25f4622a46e7cd0455; later fixes, tests and docs remain modified/untracked |
+| Reviewed source committed/pushed | PASS after authorized follow-up | Code commit b18a5937e341e06b541a20360ceeee067f21efbf pushed and verified on public main |
 | Client video <=5 minutes | NOT VERIFIED | Timed outline prepared; recording not available |
 | Technical video <=5 minutes | NOT VERIFIED | Timed outline prepared; recording not available |
 | Unlisted YouTube video, total <=10 minutes | FAIL / pending deliverable | No final URL, playback or measured recording duration |
@@ -52,7 +54,7 @@ The separate live Elexon integration test was not rerun in this final documentat
 ## Blockers in completion order
 
 1. Resolve analytical compliance: hourly output versus the half-hour requirement, and client acceptance of the assumed cutoff.
-2. Review, commit and push the current fixes/tests/docs. A public repository containing an older commit is insufficient.
+2. Completed in the authorized follow-up: reviewed code/tests/docs committed and pushed as b18a5937e341e06b541a20360ceeee067f21efbf. Commit/push any further analytical or delivery-link changes before final submission.
 3. Ensure the repository name meets the requested anonymity convention; rename if necessary and update links/origin.
 4. Deploy the reviewed revision under separately approved account actions and verify the public frontend, backend and Elexon-derived data.
 5. Record/upload the two-part video and measure the actual final durations; a script is not a video.
@@ -65,7 +67,7 @@ The separate live Elexon integration test was not rerun in this final documentat
 - `docs/submission-checklist.md`: verified/pending gates, timing checks, incognito checks and completion order.
 - `docs/submission-readiness.md`: this report.
 
-Other source/test/documentation changes shown by Git were already present from prior correctness and QA work. They were preserved and remain uncommitted.
+Other source/test/documentation changes shown by Git were already present from prior correctness and QA work. They were preserved during the review and later included in the explicitly authorized code commit above.
 
 ## Exact submitter actions
 
@@ -102,4 +104,4 @@ Use only real repository values; the URL above is a template. Review staged cont
 7. Add the real video URL, commit/push documentation, then reopen the final repository, app/API and video links in incognito. Confirm the deployed source matches the intended revision.
 8. Confirm the 16-hour effort constraint, complete https://forms.cloud.microsoft/r/FTX6K2bbnU with the actual URLs and required details, and retain its confirmation. Do not submit before the video exists.
 
-Use `submission-checklist.md` as the final checkbox gate. Public deployment, final source publication, video, form and final-link verification remain incomplete.
+Use `submission-checklist.md` as the final checkbox gate. Reviewed code publication is complete; public deployment, video, form and final-link verification remain incomplete.

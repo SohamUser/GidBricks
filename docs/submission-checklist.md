@@ -14,8 +14,8 @@ Status: **not ready to submit**. Checkboxes record verified completion, not plan
 - [x] Public repository can be opened without signing in.
 - [ ] Repository uses an anonymous name accepted for the assignment; a random name is recommended.
 - [ ] Resolve the hourly-output adaptation against the assignment's half-hour requirement, or obtain explicit acceptance of the limitation.
-- [ ] Latest source, tests and documentation committed on `main`; working tree was dirty at review, with new files untracked.
-- [ ] Push that commit and verify its SHA and files on the public repository.
+- [x] Reviewed source, tests and readiness documentation committed on `main` in `b18a5937e341e06b541a20360ceeee067f21efbf`.
+- [x] Code commit pushed; remote `main` SHA verified as `b18a5937e341e06b541a20360ceeee067f21efbf` before this documentation follow-up.
 - [ ] Deployed frontend and Python backend work on Vercel or Heroku.
 - [ ] Real Elexon-derived forecasts, actuals and metrics load in the public app.
 - [x] Docker setup built without cached application layers and started successfully during QA; services are currently healthy.
@@ -45,4 +45,4 @@ Status: **not ready to submit**. Checkboxes record verified completion, not plan
 8. Add the actual video URL, commit/push the final documentation and reopen every final link in incognito.
 9. Submit the form and retain confirmation. Do not submit without the video.
 
-The submitter owns account actions, recording/upload and final form submission. No commit, push, rename, deployment, upload or form submission was performed in this readiness review.
+The submitter owns account actions, recording/upload and final form submission. The readiness review performed no publishing actions. In a subsequent explicitly authorized follow-up, code commit `b18a5937e341e06b541a20360ceeee067f21efbf` was committed, pushed and verified on remote `main`. Repository rename, deployment, video upload and form submission remain pending.
