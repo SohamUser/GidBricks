@@ -1,5 +1,7 @@
 # Source semantics, configurable cutoff and remaining scoped tasks
 
+Publication follow-up: code commit `8deeb6ef41b14a7ed96a52f3bd9e70f7bc2a0930` was subsequently pushed and verified. GitHub reported an externally completed rename to `pjijxgvh`; origin and current repository links were updated. Earlier uncommitted/manual-rename observations below describe the original review handoff.
+
 Deployment, video recording/upload and form submission are intentionally deferred. This follow-up preserves the existing React/Python/Docker product and original Elexon data. No half-hour forecast observations have been manufactured.
 
 ## 1. Resolution and physical quantity
@@ -33,9 +35,9 @@ Compose passes the optional root `.env` setting to the backend. Standalone Pytho
 
 ## 3. Repository naming
 
-Configured origin remains `https://github.com/SohamUser/GidBricks.git`. GitHub CLI is not installed, so its authenticated rename path is unavailable. No browser-authentication flow or credential extraction was attempted. No rename or duplicate repository creation occurred.
+During the review, the origin still used the old name and GitHub CLI was absent. During the subsequent authorized push, GitHub reported that the repository had moved to `https://github.com/SohamUser/pjijxgvh.git`. The local origin was updated and the new remote verified. The rename was performed externally; this agent did not rename or create a repository, initiate browser authentication, or extract credentials.
 
-Suggested name, randomly generated locally: **pjijxgvh**. Availability is not asserted. Rename manually:
+The suggested name **pjijxgvh** is now the verified repository name. The following earlier manual instructions are retained for reference; no further rename is needed:
 
 1. Sign in to GitHub and open the existing repository → Settings → General → Repository name.
 2. Rename `GidBricks` to `pjijxgvh` if available, otherwise another neutral random name. Preserve visibility and contents.

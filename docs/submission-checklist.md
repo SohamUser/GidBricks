@@ -6,7 +6,7 @@ Current scope explicitly defers deployment, video recording/upload and the form.
 
 ## Links and access
 
-- Repository: https://github.com/SohamUser/GidBricks — configured origin; prior public access verified. GitHub CLI is absent, so no rename was attempted. Suggested random name: `pjijxgvh`; manual steps are in the source review.
+- Repository: https://github.com/SohamUser/pjijxgvh — GitHub reported the existing repository's move to this random name; local origin and remote code commit were verified. Reopen the final renamed URL signed out before submission.
 - Application: **deferred**; no verified public URL. See `deployment.md`.
 - Video: **deferred**; no verified YouTube URL.
 - Submission form: https://forms.cloud.microsoft/r/FTX6K2bbnU — **deferred**; no submission performed.
@@ -14,13 +14,13 @@ Current scope explicitly defers deployment, video recording/upload and the form.
 ## Required gates
 
 - [x] Public repository can be opened without signing in.
-- [ ] Repository uses an anonymous name accepted for the assignment; a random name is recommended.
+- [x] Repository uses random name `pjijxgvh`; GitHub reported the move and the new remote was verified.
 - [ ] Resolve the hourly-output adaptation against the assignment's half-hour requirement, or obtain explicit acceptance of the limitation.
 - [x] Verify source cadence and MW units; retain conditional hourly analysis because reliable half-hour forecast mapping is not established.
 - [x] Make cutoff configurable, preserve default 09:50, and test boundary eligibility and UI/API metadata.
 - [x] Reviewed source, tests and readiness documentation committed on `main` in `b18a5937e341e06b541a20360ceeee067f21efbf`.
 - [x] Code commit pushed; remote `main` SHA verified as `b18a5937e341e06b541a20360ceeee067f21efbf` before this documentation follow-up.
-- [ ] Review, commit and push the subsequent source-semantics/configurable-cutoff follow-up; the publication checks above describe the earlier code revision.
+- [x] Source-semantics/configurable-cutoff follow-up committed and pushed as `8deeb6ef41b14a7ed96a52f3bd9e70f7bc2a0930`; remote SHA verified.
 - [ ] Deployed frontend and Python backend work on Vercel or Heroku.
 - [ ] Real Elexon-derived forecasts, actuals and metrics load in the public app.
 - [x] Docker setup built without cached application layers and started successfully during QA; services are currently healthy.

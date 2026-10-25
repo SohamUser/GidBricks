@@ -17,7 +17,7 @@ The frontend is built with `npm --prefix frontend run build`; Vercel’s Python 
 
 ## Dashboard route
 
-1. Import https://github.com/SohamUser/GidBricks into a Vercel team where you have project-creation permission.
+1. Import https://github.com/SohamUser/pjijxgvh into a Vercel team where you have project-creation permission.
 2. Select the **Other** preset and repository root. Leave custom overrides unset; use the checked-in configuration.
 3. Deploy the `main` branch.
 4. In project deployment protection settings, ensure the final production submission URL is publicly accessible.

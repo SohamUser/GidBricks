@@ -4,7 +4,7 @@ A focused pilot for a Great Britain day-ahead trading team: replay the wind fore
 
 **Live application:** pending deployment; no verified public application URL is available. See [deployment instructions](docs/deployment.md).
 
-**Public repository:** https://github.com/SohamUser/GidBricks
+**Public repository:** https://github.com/SohamUser/pjijxgvh
 
 **Demo video:** pending recording and unlisted YouTube upload by the submitter. Do not submit the assignment until the video is available. See [the timed demo script](docs/demo-script.md).
 
