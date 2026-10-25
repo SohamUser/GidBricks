@@ -1,6 +1,10 @@
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from app.main import app
+from app.api import routes
 
 
 class ApiTests(unittest.TestCase):
@@ -35,6 +39,29 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         self.assertEqual(len(result.text.strip().splitlines()), 25)
         self.assertIn("2026-02-01", result.text)
+
+    def test_mape_contract(self):
+        result = self.client.get("/api/accuracy").json()["metrics"]
+        self.assertIsInstance(result["mape"], float)
+        self.assertEqual(result["mapeCount"], 744)
+        self.assertEqual(result["mapeExcludedCount"], 0)
+
+    def test_invalid_snapshot_is_unavailable_including_readiness(self):
+        with (
+            TemporaryDirectory() as directory,
+            patch.object(routes, "DATA_DIR", Path(directory)),
+        ):
+            for payload in [
+                None,
+                "{",
+                '{"WINDFOR": [{"generation": 1}], "FUELHH": []}',
+            ]:
+                routes.analysis.cache_clear()
+                if payload is not None:
+                    (Path(directory) / "snapshot.json").write_text(payload)
+                for endpoint in ["/api/health", "/api/decision?date=2026-01-15"]:
+                    self.assertEqual(self.client.get(endpoint).status_code, 503)
+        routes.analysis.cache_clear()
 
     def test_api_documentation(self):
         schema = self.client.get("/api/openapi.json")

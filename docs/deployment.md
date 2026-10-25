@@ -1,6 +1,6 @@
 # Deploy to Vercel
 
-The code is deployment-ready but **has not been deployed**. The connected team returned `403: You don't have permission to create a project`; the CLI fallback reported no existing credentials. As agreed, account sign-in and deployment are left to the submitter.
+Deployment configuration is prepared but **has not been verified on Vercel**. Earlier project creation returned `403: You don't have permission to create a project`; the CLI fallback reported no existing credentials. The subsequent read-only QA check found no matching project in the connected team. As agreed, account sign-in and deployment are left to the submitter.
 
 ## CLI route
 

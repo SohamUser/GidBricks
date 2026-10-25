@@ -1,79 +1,34 @@
-# Recording guide — target 9 minutes
+# Video outline — target 9 minutes, maximum 10
 
-Record the browser at approximately 1440×900, hide unrelated tabs, and rehearse once. Use the deployed public app. Do not display authentication settings or credentials. The first part is a client pitch; the second is an internal technical review. Keep each below five minutes and the full recording below ten.
+Status: script prepared; no recording, upload or video URL has been verified. Rehearse locally, but record the final demonstration against the verified public deployment. Show readable text, hide unrelated tabs, and never show credentials.
 
-## Part 1 — Client presentation (0:00–4:30)
+## Part 1 — Client presentation, 0:00–4:30
 
-### 0:00–0:35 — Outcome
+| Time | Screen/action | Suggested narration |
+| --- | --- | --- |
+| 0:00–0:35 | Decision overview, January 15, actuals off | “Wind availability affects how much electricity the desk must procure. Wind Desk replays the forecast available at a historical purchase cutoff and makes its measured error visible.” |
+| 0:35–1:30 | Date, next-day delivery, coverage, publication panel | “This January 15 decision targets January 16 delivery. We assume a 09:50 UK cutoff; it needs agreement with the desk. Each target uses the latest forecast published by that cutoff. The publication time makes the outlook traceable.” Point out the energy, peak and minimum cards. |
+| 1:30–2:15 | Enable actual overlay; expand interval table | “Actuals are retrospective. The chart and table show what happened alongside the forecast, with publication timestamps. January WINDFOR is hourly; this pilot compares it with averaged actual half-hours.” Demonstrate CSV export. |
+| 2:15–3:30 | Accuracy, full January range; daily bars; January 27 drill-down | “Across 744 matched hours, MAE is about 2,013 MW, RMSE 2,506 MW and bias +1,730 MW. Positive bias means wind was overestimated. P90 absolute error is about 4,146 MW.” Filter a date range and inspect the largest daily miss. The API also reports MAPE 21.61%, with 744 included and zero excluded hours; do not imply it has its own dashboard card. |
+| 3:30–4:30 | Methodology; return to overview | “These are differences between the two specified national Elexon series. They are historical observations, not future confidence bounds. Demand, contracted supply and existing positions are needed to size a purchase. The hourly adaptation can hide opposite half-hour errors, so half-hour mapping remains to be agreed.” Close with provenance, visible uncertainty and auditable exceptions as the pilot's value. |
 
-**Screen:** Decision overview, January 15, actual overlay off.
+## Part 2 — Technical review, 4:30–9:00
 
-“Wind Desk answers two practical questions before a day-ahead purchase: what wind forecast was available at the decision time, and how large have its errors been? This January pilot brings the outlook, publication provenance and measured outcomes into a single view. We use only the two requested Elexon sources.”
+| Time | Screen/action | Suggested narration |
+| --- | --- | --- |
+| 4:30–5:15 | Architecture diagram and directory tree | “React/TypeScript owns presentation. FastAPI owns the API, while Python services own ingestion, historical selection and scoring. Frontend and backend have independent dependencies and Dockerfiles. A bundled snapshot keeps the fixed historical pilot deterministic.” |
+| 5:15–6:00 | `backend/app/services/elexon_client.py`, manifest | “Only WINDFOR and FUELHH WIND are used. Daily requests use publication filters for forecasts and settlement dates for actuals. JSON arrays, records and coverage are validated. Timeouts, retries and interrupted reads are handled. Raw responses and hashes preserve provenance.” Explain that valid upstream omissions cannot always be proven absent. |
+| 6:00–6:50 | `forecast_selection.py`, selection and matching | “Aware timestamps normalize to UTC. Per delivery target, choose maximum publishTime at or before the assumed cutoff. Join actuals by startTime, never publication time. January 31 includes February 1 delivery. Identical revisions collapse; conflicts fail. Null latest values stay missing.” Show hourly averaging explicitly. |
+| 6:50–7:40 | `accuracy.py`, focused tests and API schema | “Error is forecast minus actual. Python computes MAE, RMSE, mean bias, nearest-rank P90 and MAPE. MAPE excludes zero actuals and missing pairs, with counts disclosed. Monthly metrics pool observations rather than averaging daily means.” Show the current results: 26 offline backend tests passed, one live test skipped by default, and five frontend tests passed. The separate opt-in live check previously passed four requests; avoid claiming a full live re-download. |
+| 7:40–8:25 | Docker Compose, healthy services, API health, Vercel configuration | “Docker builds a non-root Nginx frontend and FastAPI backend. Same-origin API proxying works locally; Vite's upstream is configurable. The endpoint smoke check validates schemas, dates, errors and CSV over HTTP.” Show public deployment only after verifying it; configuration alone does not establish cloud operation. |
+| 8:25–9:00 | README, limitations and AI disclosure | “Codex assisted with research, implementation, tests and documentation. Numerical observations come from Elexon. Key limits are hourly alignment, the assumed cutoff, source comparability and descriptive error estimates. Snapshot replacement is atomic per file, not across the whole data set.” Explain startup and refresh handoff briefly. |
 
-### 0:35–1:30 — Decision replay
+## Recording and upload checks
 
-**Screen:** Point to decision date, 09:50 cutoff, January 16 delivery, energy cards and forecast line.
+- Recheck displayed numbers against the current API before narration; do not read stale figures after refreshing data.
+- Keep client section at or below 5:00, technical section at or below 5:00, and the entire recording at or below 10:00. Target 4:30 + 4:30 leaves one minute of headroom.
+- Measure the actual final edit; the outline's timing is not proof of recorded duration.
+- Upload to YouTube as Unlisted and wait for processing. Verify audio, readable code, both sections and playback in an incognito window.
+- Add the verified URL to README and the submission checklist. No video URL is currently available.
 
-“We are replaying a January 15 decision for January 16 delivery. The cutoff is 09:50 UK time, our N2EX pilot convention. Each delivery hour takes the most recently published eligible forecast. The publication panel shows exactly when it was issued. Forecast coverage is complete. This gives the desk a traceable wind outlook without accidentally using a later forecast.”
-
-“The energy total summarizes the full day, while minimum and peak output show the shape that a daily total alone would hide. These are national reported wind quantities; they are not the client’s contracted supply.”
-
-### 1:30–2:15 — Outcome inspection
-
-**Screen:** Enable actuals; expand hourly values.
-
-“We deliberately separate the decision view from hindsight. Turning on actuals shows what subsequently happened. We can inspect every selected value and its publication timestamp, or export the same analysis for an audit. January’s forecasts are hourly; actual half-hours are averaged into matching hours.”
-
-### 2:15–3:30 — Quantify uncertainty
-
-**Screen:** Forecast accuracy, full January range; hover daily bars and open January 27 from the ranked list.
-
-“Across 744 matched hours, mean absolute error is about 2,013 MW. RMSE is about 2,506 MW, highlighting larger misses. Bias is positive by about 1,730 MW: the forecast generally exceeded the reported actual series. Ninety percent of observed absolute errors were at or below about 4,146 MW.”
-
-“January 27 was the largest daily miss. Clicking it takes us straight to the underlying outlook and outcome. This makes exceptions investigable rather than leaving the trader with a single monthly score.”
-
-### 3:30–4:30 — Value and boundaries
-
-**Screen:** Methodology, then return to overview.
-
-“These results quantify the gap between the specified Elexon datasets. Differences in coverage may contribute, so we should not attribute every gap to weather forecasting. The monthly results are retrospective, not a future guarantee or a reserve recommendation. To size your actual purchase we would next need demand, contracted supply and existing positions. This pilot establishes the reliable foundation: a time-correct outlook, visible provenance and measurable error.”
-
-## Part 2 — Technical review (4:30–9:00)
-
-### 4:30–5:15 — Architecture
-
-**Screen:** `docs/architecture.md` diagram and repository tree.
-
-“The implementation has a React/TypeScript frontend and a small FastAPI backend. An offline Python command downloads the two Elexon streams. The repository retains raw responses and a manifest of URLs and checksums. The runtime reads a bundled snapshot, so the demo remains usable when Elexon is unavailable. There is no database or scheduler because this is a fixed historical month.”
-
-### 5:15–6:30 — Analytical correctness
-
-**Screen:** `backend/app/services/forecast_selection.py`, selection loop and hourly actual pair.
-
-“Forecast selection is per target hour, constrained by publication time at or before the original decision cutoff. We verified the real response cadence: WINDFOR is hourly. FUELHH is half-hourly, so both halves are required and averaged. Missing observations stay missing. Energy is the sum of hourly average MW over one-hour intervals. Actuals use the latest retrieved publication; identical duplicates collapse and conflicting values at the same publication fail visibly.”
-
-“The date range follows purchase decisions, so January 31 correctly includes February 1 delivery. MAE, RMSE, signed bias and nearest-rank P90 are computed in Python. Monthly aggregation uses all hourly pairs rather than averaging daily metrics.”
-
-### 6:30–7:25 — Code and API
-
-**Screen:** `backend/app/api/routes.py`, frontend view files, browser network or `/api/decision`.
-
-“The API exposes decisions, accuracy, coverage and CSV. Dates are validated at the boundary. The analytical module is independent of FastAPI, making the important rules easy to test. The frontend has separate decision, accuracy and methodology views with typed response shapes. Requests are parallel and obsolete requests are aborted. CSV uses the same backend calculation path as the UI.”
-
-### 7:25–8:20 — Verification and packaging
-
-**Screen:** Run tests and show Dockerfile and Vercel config.
-
-“Nine focused tests cover cutoff inclusion and exclusion, missing data, averaging, revisions, duplicate conflicts, formulas, aggregation, date validation and export. Integration tests assert all 744 real-data pairs and check every selected publication against its cutoff. The frontend passes TypeScript and its production build. The dependency audit is clear. Docker runs a separate Nginx frontend and FastAPI backend, both as non-root users. Vercel configuration builds the frontend package and routes API requests to its Python adapter.”
-
-**Recording note:** Docker build, healthy startup and the browser-to-container flow have now been verified. Show the running container and `/api/docs` if time permits.
-
-### 8:20–9:00 — Maintainability and handoff
-
-**Screen:** README startup, analysis limits and AI disclosure.
-
-“The README contains startup commands, structure, data refresh, formulas and limitations. Codex assisted with the implementation and verification; the numerical dataset is entirely Elexon data. The main next steps are agreeing source coverage and portfolio inputs before adding procurement sizing, then collecting a longer chronological evaluation before recommending uncertainty reserves. The pilot keeps those extensions out of the current code.”
-
-## Upload and access check
-
-Upload the completed recording to YouTube with **Unlisted** visibility, wait for processing, and open the URL while signed out or in incognito. Ensure audio, screen text and both sections are understandable. Add the link to README and the submission checklist before submitting.
+Actual client duration: pending. Actual technical duration: pending. Actual total duration: pending. Unlisted playback verification: pending.

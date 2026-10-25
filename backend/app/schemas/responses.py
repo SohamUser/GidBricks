@@ -11,6 +11,9 @@ class Metrics(BaseModel):
     rmse: float | None
     bias: float | None
     p90: float | None
+    mape: float | None
+    mapeCount: int
+    mapeExcludedCount: int
 
 
 class ForecastPoint(BaseModel):

@@ -9,6 +9,7 @@ The replay uses January 1–31 purchase decisions at 09:50 GMT, for January 2–
 - Root mean squared error: **2,505.94 MW**.
 - Mean signed error: **+1,729.93 MW**, using forecast minus actual.
 - Nearest-rank P90 absolute error: **4,145.50 MW**.
+- MAPE: **21.6102%**, using **744 nonzero matched hourly actuals**, with **0 excluded hours**. See `pipeline-review.md` for the exclusion policy and hourly-alignment limitation.
 - Largest daily MAE: **January 27 decision**, January 28 delivery, **5,374.79 MW**.
 - Other large misses: January 11 decision, **4,900.88 MW**; January 10 decision, **4,897.10 MW**.
 - Smallest daily MAE: **January 8 decision**, January 9 delivery, **797.06 MW**.

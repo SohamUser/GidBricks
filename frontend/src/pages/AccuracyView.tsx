@@ -46,6 +46,17 @@ export default function AccuracyView({
     .slice(0, 5);
   return (
     <>
+      {accuracy.metrics.count < accuracy.expectedHours && (
+        <Alert>
+          <AlertTitle>
+            {accuracy.metrics.count === 0 ? "No matched observations" : "Partial comparison coverage"}
+          </AlertTitle>
+          <AlertDescription>
+            {accuracy.metrics.count} of {accuracy.expectedHours} hours have both a forecast and an actual.
+            Missing pairs are excluded from the metrics. Select another date range to compare available data.
+          </AlertDescription>
+        </Alert>
+      )}
       <ErrorMetrics metrics={accuracy.metrics} />
       <div className="coverage-summary">
         <Badge variant="secondary">

@@ -23,7 +23,7 @@ Analysis is built once per worker and cached. Date changes return 24 records; fu
 
 | Endpoint | Contract |
 | --- | --- |
-| `GET /api/health` | Process status and whether the snapshot file exists |
+| `GET /api/health` | Snapshot analysis readiness; unusable snapshots return 503 |
 | `GET /api/decision?date=2026-01-15` | Decision/delivery dates, cutoff, 24 points, selected publication per point, coverage, energy and retrospective metrics |
 | `GET /api/accuracy?from=2026-01-01&to=2026-01-31` | Pair-weighted metrics, daily scores, scores by delivery hour, expected pair count |
 | `GET /api/coverage` | Retrieval timestamp, overall expected/matched counts, daily counts and scores |
@@ -41,11 +41,11 @@ Invalid, reversed or out-of-window dates return 422. Missing observations are JS
 
 ## Failure handling and operation
 
-Ingestion uses a 60-second timeout, four attempts for transient transport failures/429/5xx, and exponential backoff. Non-retryable HTTP errors fail immediately. The process writes the combined snapshot only after all requests succeed. Keep the checked-in verified snapshot if an ingestion run fails, and check raw-file manifest hashes before publishing refreshed data.
+Ingestion uses a 60-second timeout, four attempts for transient transport failures/429/5xx, and exponential backoff. Non-retryable HTTP errors fail immediately. All downloads and coverage validation finish before existing files are replaced. Individual files are replaced atomically; the whole file set is not a crash-safe transaction. Keep the checked-in verified snapshot if an ingestion run fails, and check raw-file manifest hashes before publishing refreshed data. See `pipeline-review.md` for completeness limits and MAPE semantics.
 
 Frontend requests run in parallel; aborting an obsolete request prevents stale results from overwriting a newer selection. Failed requests show a retry action rather than stale numerical cards. No secrets are needed in the browser or repository.
 
-Vercel deployment uses a static frontend plus a Python function; Docker uses separate non-root Nginx and FastAPI containers. Health checks establish process reachability; coverage and API tests establish data readiness. To roll back, redeploy the prior Git commit together with its snapshot. Source refresh and redeployment are manual for this pilot.
+Vercel deployment uses a static frontend plus a Python function; Docker uses separate non-root Nginx and FastAPI containers. The backend health check initializes the cached analysis; coverage tests separately require complete pilot data. To roll back, redeploy the prior Git commit together with its snapshot. Source refresh and redeployment are manual for this pilot.
 
 ## Next work only if the pilot expands
 

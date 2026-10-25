@@ -25,10 +25,10 @@ def analysis():
         return Analysis(
             json.loads((DATA_DIR / "snapshot.json").read_text(encoding="utf-8"))
         )
-    except FileNotFoundError:
+    except (OSError, ValueError, KeyError, TypeError):
         raise HTTPException(
             503,
-            "Historical snapshot unavailable. Run python -m backend.app.services.elexon_client.",
+            "Historical snapshot unavailable or invalid. Run python -m backend.app.services.elexon_client.",
         )
 
 
@@ -41,6 +41,7 @@ def validate_range(first, last):
 
 @router.get("/health", response_model=HealthResponse)
 def health():
+    analysis()
     return {"status": "ok", "snapshotReady": (DATA_DIR / "snapshot.json").exists()}
 
 

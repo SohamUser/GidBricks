@@ -4,6 +4,9 @@ export type Metrics = {
   rmse: number | null;
   bias: number | null;
   p90: number | null;
+  mape: number | null;
+  mapeCount: number;
+  mapeExcludedCount: number;
 };
 export type Point = {
   startTime: string;

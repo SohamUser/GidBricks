@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
 import { Field, FieldLabel } from "@/components/ui/field";
 import {
@@ -61,6 +62,14 @@ export default function DecisionView({
 
   return (
     <>
+      {decision.forecastHours === 0 && (
+        <Alert>
+          <AlertTitle>No eligible wind forecasts</AlertTitle>
+          <AlertDescription>
+            No usable forecasts were published by this decision cutoff. Select another decision date.
+          </AlertDescription>
+        </Alert>
+      )}
       <div className="metrics" aria-label="Delivery-day forecast summary">
         <Metric
           label="Forecast wind energy"

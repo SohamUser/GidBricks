@@ -1,7 +1,17 @@
 import type { Accuracy, Coverage, Decision } from "../types";
 
 async function get<T>(url: string, signal: AbortSignal): Promise<T> {
-  const response = await fetch(url, { signal });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      throw new Error("The data request timed out. Please try again.");
+    }
+    throw error;
+  }
   if (!response.ok) {
     const body = await response.json().catch(() => null);
     throw new Error(

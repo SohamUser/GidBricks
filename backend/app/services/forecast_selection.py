@@ -9,6 +9,8 @@ from .accuracy import metrics, summarize_accuracy
 
 
 def timestamp(value):
+    if not isinstance(value, str):
+        raise ValueError("Source timestamp must be a timezone-aware string")
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     if parsed.tzinfo is None:
         raise ValueError("Source timestamp must include a timezone")
@@ -22,23 +24,31 @@ def iso(value):
 def index_rows(rows, forecast=False):
     """Resolve source updates by publication time; reject ambiguous same-publication values."""
     indexed = {}
+    revisions = {}
     for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("Source record must be an object")
         if not forecast and row.get("fuelType") != "WIND":
             continue
         start, published = timestamp(row["startTime"]), timestamp(row["publishTime"])
         generation = row["generation"]
-        if (
-            not isinstance(generation, (int, float))
-            or not math.isfinite(generation)
-            or generation < 0
-        ):
-            raise ValueError("Invalid generation")
-        key = (start, published) if forecast else start
-        previous = indexed.get(key)
-        if previous and previous[0] == published and previous[1] != generation:
+        if generation is not None:
+            if isinstance(generation, bool):
+                raise ValueError("Invalid generation")
+            try:
+                generation = float(generation)
+            except (TypeError, ValueError, OverflowError) as error:
+                raise ValueError("Invalid generation") from error
+            if not math.isfinite(generation) or generation < 0:
+                raise ValueError("Invalid generation")
+        revision = (start, published)
+        if revision in revisions and revisions[revision] != generation:
             raise ValueError(
                 f"Conflicting generation at {start}, publication {published}"
             )
+        revisions[revision] = generation
+        key = (start, published) if forecast else start
+        previous = indexed.get(key)
         if previous is None or published >= previous[0]:
             indexed[key] = (published, generation)
     return indexed
@@ -48,8 +58,16 @@ class Analysis:
     def __init__(self, snapshot):
         self.forecasts = index_rows(snapshot["WINDFOR"], forecast=True)
         self.actuals = index_rows(snapshot["FUELHH"])
+        if any(
+            start.minute not in (0, 30) or start.second or start.microsecond
+            for start in self.actuals
+        ):
+            raise ValueError("Snapshot is not half-hourly FUELHH; review alignment")
         # January WINDFOR is hourly. Refuse silently incompatible future snapshots.
-        if any(start.minute != 0 or start.second != 0 for start, _ in self.forecasts):
+        if any(
+            start.minute or start.second or start.microsecond
+            for start, _ in self.forecasts
+        ):
             raise ValueError("Snapshot is not hourly WINDFOR; review alignment")
         self.days = {
             str(FIRST + timedelta(days=i)): self.decision(FIRST + timedelta(days=i))
@@ -75,7 +93,11 @@ class Analysis:
                 self.actuals.get(start),
                 self.actuals.get(start + timedelta(minutes=30)),
             ]
-            actual = sum(r[1] for r in actual_pair) / 2 if all(actual_pair) else None
+            actual = (
+                sum(r[1] for r in actual_pair) / 2
+                if all(r is not None and r[1] is not None for r in actual_pair)
+                else None
+            )
             value = forecast[1] if forecast else None
             points.append(
                 {
