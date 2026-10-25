@@ -35,3 +35,10 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         self.assertEqual(len(result.text.strip().splitlines()), 25)
         self.assertIn("2026-02-01", result.text)
+
+    def test_api_documentation(self):
+        schema = self.client.get("/api/openapi.json")
+        self.assertEqual(schema.status_code, 200)
+        self.assertIn("/api/decision", schema.json()["paths"])
+        self.assertIn("/api/accuracy", schema.json()["paths"])
+        self.assertEqual(self.client.get("/api/docs").status_code, 200)

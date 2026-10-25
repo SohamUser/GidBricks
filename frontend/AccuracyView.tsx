@@ -10,7 +10,25 @@ import {
   YAxis,
   ReferenceLine,
 } from "recharts";
-import { ArrowRight, Check, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardAction,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import { number, shortDate, tooltipStyle, ErrorMetrics } from "./shared";
 import type { Accuracy } from "./types";
 
@@ -21,154 +39,218 @@ export default function AccuracyView({
   accuracy: Accuracy;
   onInspect: (date: string) => void;
 }) {
+  const rankedDays = [...accuracy.days]
+    .filter((d) => d.mae !== null)
+    .sort((a, b) => b.mae! - a.mae!)
+    .slice(0, 5);
   return (
-    accuracy && (
-      <>
-        <ErrorMetrics metrics={accuracy.metrics} />
-        <div className="coverage-banner">
-          <Check size={16} />
-          <strong>
-            {accuracy.metrics.count} / {accuracy.expectedHours} matched hours
-          </strong>
-          <span>
-            Missing pairs excluded · error = forecast − actual · hourly aligned
-          </span>
-        </div>
-        <section className="panel">
-          <div className="panel-heading">
-            <div>
-              <h2>Daily forecast error</h2>
-              <p>Mean absolute error by purchase decision date · MW</p>
-            </div>
-            <span className="unit-pill">LOWER IS BETTER</span>
-          </div>
+    <>
+      <ErrorMetrics metrics={accuracy.metrics} />
+      <div className="coverage-summary">
+        <Badge variant="secondary">
+          {accuracy.metrics.count} / {accuracy.expectedHours} matched hours
+        </Badge>
+        <p>
+          Missing pairs excluded. Forecast minus actual; positive bias means
+          wind was overestimated.
+        </p>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <h2>Error by purchase decision day</h2>
+          </CardTitle>
+          <CardDescription>
+            Mean absolute error (MW) against the following delivery day.
+          </CardDescription>
+          <CardAction>
+            <Badge variant="outline">Lower is better</Badge>
+          </CardAction>
+        </CardHeader>
+        <CardContent>
           <div
             className="main-chart"
             role="img"
-            aria-label="Daily mean absolute wind forecast error"
+            aria-label="Daily mean absolute wind forecast errors. Values are in the daily scores table below."
           >
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              minWidth={0}
+              initialDimension={{ width: 800, height: 305 }}
+            >
               <BarChart
                 data={accuracy.days}
-                margin={{ left: 15, right: 15, top: 10 }}
+                margin={{ left: 0, right: 16, top: 10, bottom: 12 }}
               >
                 <CartesianGrid
                   vertical={false}
-                  stroke="#e8eeea"
-                  strokeDasharray="3 4"
+                  stroke="var(--border)"
+                  strokeDasharray="3 5"
                 />
                 <XAxis
                   dataKey="decisionDate"
                   tickFormatter={shortDate}
-                  tick={{ fontSize: 11 }}
+                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                   axisLine={false}
                   tickLine={false}
                   interval={Math.max(0, Math.floor(accuracy.days.length / 8))}
                 />
                 <YAxis
-                  tick={{ fontSize: 11 }}
+                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                  tickFormatter={(v) => number(v)}
                   axisLine={false}
                   tickLine={false}
+                  width={65}
                 />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  labelFormatter={(v) => shortDate(String(v))}
-                  formatter={(v) => `${number(Number(v))} MW`}
+                  labelFormatter={(value) =>
+                    `Decision ${shortDate(String(value))}`
+                  }
+                  formatter={(value) => `${number(Number(value), 1)} MW`}
                 />
                 <Bar
                   dataKey="mae"
-                  name="MAE"
-                  fill="#278c72"
+                  name="Mean absolute error"
+                  fill="var(--forecast)"
                   radius={[3, 3, 0, 0]}
+                  maxBarSize={40}
                   isAnimationActive={false}
                 />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </section>
-        <div className="bottom-grid">
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>Bias through the delivery day</h2>
-                <p>Mean forecast − actual, by delivery hour · MW</p>
-              </div>
-            </div>
-            <div className="small-chart">
-              <ResponsiveContainer width="100%" height="100%">
+        </CardContent>
+      </Card>
+      <div className="bottom-grid">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <h2>Bias by delivery hour</h2>
+            </CardTitle>
+            <CardDescription>
+              Mean signed error (MW). Above zero means overestimation.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              className="small-chart"
+              role="img"
+              aria-label="Average signed forecast error by delivery hour in GMT"
+            >
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minWidth={0}
+                initialDimension={{ width: 800, height: 305 }}
+              >
                 <AreaChart
                   data={accuracy.byHour}
-                  margin={{ left: 5, right: 20 }}
+                  margin={{ left: 0, right: 8, bottom: 12 }}
                 >
-                  <CartesianGrid vertical={false} stroke="#e8eeea" />
+                  <CartesianGrid
+                    vertical={false}
+                    stroke="var(--border)"
+                    strokeDasharray="3 5"
+                  />
                   <XAxis
                     dataKey="hour"
                     interval={5}
-                    tick={{ fontSize: 10 }}
+                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 10 }}
+                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <Tooltip
                     contentStyle={tooltipStyle}
-                    formatter={(v) => `${number(Number(v))} MW`}
+                    formatter={(value) => `${number(Number(value), 1)} MW`}
                   />
-                  <ReferenceLine y={0} stroke="#7d8e85" />
+                  <ReferenceLine y={0} stroke="var(--muted-foreground)" />
                   <Area
                     dataKey="bias"
                     name="Bias"
-                    stroke="#bd8550"
-                    fill="#bd855025"
+                    stroke="var(--actual)"
+                    fill="var(--actual)"
+                    fillOpacity={0.08}
                     isAnimationActive={false}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </section>
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>Largest daily misses</h2>
-                <p>Decision dates ranked by mean absolute error</p>
-              </div>
-            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <h2>Largest daily misses</h2>
+            </CardTitle>
+            <CardDescription>
+              Select a decision date to inspect its forecast and outcome.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="rank-list">
-              {[...accuracy.days]
-                .filter((d) => d.mae != null)
-                .sort((a, b) => b.mae! - a.mae!)
-                .slice(0, 5)
-                .map((day, i) => (
-                  <button
-                    key={day.decisionDate}
-                    onClick={() => {
-                      onInspect(day.decisionDate);
-                    }}
-                  >
-                    <span className="rank">0{i + 1}</span>
-                    <span>
-                      {shortDate(day.decisionDate)}
-                      <small>Delivery {shortDate(day.deliveryDate)}</small>
-                    </span>
-                    <strong>
-                      {number(day.mae)} <small>MW</small>
-                    </strong>
-                    <ArrowRight size={15} />
-                  </button>
-                ))}
+              {rankedDays.map((day) => (
+                <Button
+                  variant="ghost"
+                  key={day.decisionDate}
+                  onClick={() => onInspect(day.decisionDate)}
+                >
+                  <span>
+                    {shortDate(day.decisionDate)}
+                    <small>Delivery {shortDate(day.deliveryDate)}</small>
+                  </span>
+                  <strong>
+                    {number(day.mae)} <small>MW MAE</small>
+                  </strong>
+                </Button>
+              ))}
             </div>
-          </section>
-        </div>
-        <p className="analysis-note">
-          <Info size={15} />
-          These are descriptive results for the selected January decisions. They
-          are not a calibrated confidence interval or a recommended procurement
-          reserve.
-        </p>
-      </>
-    )
+          </CardContent>
+        </Card>
+      </div>
+      <Alert className="analysis-note">
+        <AlertTitle>
+          Historical comparison, not a future reserve recommendation
+        </AlertTitle>
+        <AlertDescription>
+          These results describe the selected January decisions. Differences in
+          dataset coverage can contribute to the gap; the metrics are not
+          calibrated confidence intervals.
+        </AlertDescription>
+      </Alert>
+      <details className="interval-table">
+        <summary>Daily scores and coverage</summary>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Decision</TableHead>
+              <TableHead>Delivery</TableHead>
+              <TableHead>MAE MW</TableHead>
+              <TableHead>RMSE MW</TableHead>
+              <TableHead>Bias MW</TableHead>
+              <TableHead>Matched hours</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {accuracy.days.map((day) => (
+              <TableRow key={day.decisionDate}>
+                <TableCell>{shortDate(day.decisionDate)}</TableCell>
+                <TableCell>{shortDate(day.deliveryDate)}</TableCell>
+                <TableCell>{number(day.mae, 1)}</TableCell>
+                <TableCell>{number(day.rmse, 1)}</TableCell>
+                <TableCell>{number(day.bias, 1)}</TableCell>
+                <TableCell>{day.count}/24</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </details>
+    </>
   );
 }

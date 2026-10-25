@@ -36,12 +36,12 @@ Open the production URL in incognito and confirm:
 
 Add the verified production URL to README and `docs/submission-checklist.md`, commit, and push. Then record the demo against that deployment and add the unlisted video URL. The application and video URLs cannot be access-verified until they exist.
 
-## Docker check still required
+## Docker verification
 
-The Compose configuration was validated, but this machine’s Docker Linux engine was unavailable. Start Docker Desktop, wait until the engine is ready, then run:
+Docker build and startup were verified after the Linux engine was started. The container serves the compiled shadcn UI and Python API at http://localhost:8000. To repeat:
 
 ```sh
 docker compose up --build
 ```
 
-Open http://localhost:8000 and repeat the API/coverage checks above. Stop with `docker compose down`. The local non-container application and its analytical tests were verified; container execution has not been verified.
+Open http://localhost:8000 and repeat the API/coverage checks above. The API reference is http://localhost:8000/api/docs. Stop with `docker compose down`.

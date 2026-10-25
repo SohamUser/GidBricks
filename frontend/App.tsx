@@ -1,35 +1,72 @@
+import { useEffect, useState } from "react";
+import { Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import DecisionView from "./DecisionView";
 import AccuracyView from "./AccuracyView";
 import MethodologyView from "./MethodologyView";
 import { shortDate } from "./shared";
-import { useEffect, useState } from "react";
-import {
-  ArrowDownToLine,
-  ArrowRight,
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  Clock3,
-  Database,
-  Gauge,
-  Layers3,
-  Wind,
-} from "lucide-react";
 import type { Accuracy, Coverage, Decision } from "./types";
+
+type View = "decision" | "accuracy" | "methodology";
+const views: Record<
+  View,
+  { label: string; title: string; description: string }
+> = {
+  decision: {
+    label: "Decision overview",
+    title: "Day-ahead wind outlook",
+    description:
+      "Review the wind forecast available before the purchase cutoff.",
+  },
+  accuracy: {
+    label: "Forecast accuracy",
+    title: "Forecast performance",
+    description:
+      "Quantify the gap between decision-time forecasts and reported wind outturn.",
+  },
+  methodology: {
+    label: "Data & methodology",
+    title: "Sources, timing and assumptions",
+    description:
+      "Understand what the pilot measures and how each result is calculated.",
+  },
+};
 
 async function get<T>(url: string, signal: AbortSignal): Promise<T> {
   const response = await fetch(url, { signal });
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-    throw new Error(error?.detail || `Request failed (${response.status})`);
+    const body = await response.json().catch(() => null);
+    throw new Error(
+      typeof body?.detail === "string"
+        ? body.detail
+        : `Request failed (${response.status}). Check the selected dates and try again.`,
+    );
   }
   return response.json();
 }
 
-export default function App() {
-  const [tab, setTab] = useState<"decision" | "accuracy" | "methodology">(
-    "decision",
+function LoadingView() {
+  return (
+    <div
+      className="loading-layout"
+      role="status"
+      aria-label="Loading historical wind data"
+    >
+      <span className="sr-only">Loading historical wind data</span>
+      <Skeleton className="h-24 w-full" />
+      <Skeleton className="h-96 w-full" />
+    </div>
   );
+}
+
+export default function App() {
+  const [tab, setTab] = useState<View>("decision");
   const [date, setDate] = useState("2026-01-15");
   const [range, setRange] = useState({ from: "2026-01-01", to: "2026-01-31" });
   const [decision, setDecision] = useState<Decision | null>(null);
@@ -73,246 +110,224 @@ export default function App() {
   }
 
   const exportRange = tab === "decision" ? { from: date, to: date } : range;
+  const deliveryDate = new Date(
+    new Date(date + "T12:00:00Z").getTime() + 86400000,
+  )
+    .toISOString()
+    .slice(0, 10);
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <a className="brand" href="/" aria-label="Wind Desk home">
-          <span className="brand-mark">
-            <Wind size={25} />
-          </span>
-          <span>
-            wind<span className="brand-light">desk</span>
-            <small>ENERGY INTELLIGENCE</small>
-          </span>
-        </a>
-        <div className="workspace">
-          <span className="workspace-icon">
-            <Layers3 size={17} />
-          </span>
-          <div>
-            GB trading desk<small>National wind portfolio</small>
-          </div>
-          <span className="workspace-dot" />
-        </div>
-        <span className="nav-label">WORKSPACE</span>
-        <nav aria-label="Main navigation">
-          <button
-            className={tab === "decision" ? "active" : ""}
-            onClick={() => setTab("decision")}
-          >
-            <Wind size={18} />
-            Decision overview
-            <span className="nav-indicator" />
-          </button>
-          <button
-            className={tab === "accuracy" ? "active" : ""}
-            onClick={() => setTab("accuracy")}
-          >
-            <Gauge size={18} />
-            Forecast accuracy
-          </button>
-          <button
-            className={tab === "methodology" ? "active" : ""}
-            onClick={() => setTab("methodology")}
-          >
-            <Database size={18} />
-            Data & methodology
-          </button>
-        </nav>
-        <div className="pilot-note">
-          <span className="pilot-tag">JANUARY PILOT</span>
-          <h3>A clearer view of tomorrow.</h3>
-          <p>Wind forecasts, grounded in what was known at decision time.</p>
-          <span className="pilot-period">01 — 31 JAN 2026</span>
-          <Wind className="pilot-wind" size={80} />
-        </div>
-        <div className="sidebar-bottom">
-          <span className="avatar">GB</span>
-          <div>
-            Great Britain<small>Europe/London · GMT</small>
+      <header className="masthead">
+        <div className="masthead-inner">
+          <a className="wordmark" href="/" aria-label="Wind Desk home">
+            Wind Desk<span>Power market analytics</span>
+          </a>
+          <div className="market-context">
+            <span>Great Britain</span>
+            <span>January 2026 pilot</span>
           </div>
         </div>
-      </aside>
-
-      <div className="main-shell">
-        <header className="topbar">
-          <div>
-            <span className="breadcrumb">Workspace</span>
-            <ChevronRight size={13} />
-            <span>
-              {tab === "decision"
-                ? "Decision overview"
-                : tab === "accuracy"
-                  ? "Forecast accuracy"
-                  : "Data & methodology"}
-            </span>
+      </header>
+      <Tabs
+        value={tab}
+        onValueChange={(value) => setTab(value as View)}
+        className="workspace-tabs"
+      >
+        <div className="nav-bar">
+          <div className="nav-inner">
+            <TabsList variant="line" aria-label="Workspace views">
+              {(Object.keys(views) as View[]).map((view) => (
+                <TabsTrigger key={view} value={view}>
+                  {views[view].label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <Badge variant="outline">Historical replay</Badge>
           </div>
-          <span className="snapshot-badge">
-            <span />
-            Historical replay <span className="separator">|</span> January 2026
-          </span>
-        </header>
-        <main>
+        </div>
+        <main id="main-content">
           <div className="page-heading">
             <div>
-              <div className="section-kicker">DAY-AHEAD WIND INTELLIGENCE</div>
-              <h1>
-                {tab === "decision"
-                  ? "Tomorrow, with perspective."
-                  : tab === "accuracy"
-                    ? "Measure the uncertainty."
-                    : "Know what’s behind the numbers."}
-              </h1>
-              <p>
-                {tab === "decision"
-                  ? "The wind outlook available before your day-ahead purchase decision."
-                  : tab === "accuracy"
-                    ? "A transparent backtest of the forecasts available at 09:50 UK time."
-                    : "Two Elexon datasets. One reproducible view of the January trading window."}
-              </p>
+              <h1>{views[tab].title}</h1>
+              <p>{views[tab].description}</p>
             </div>
-            <a
-              className="export-button"
-              href={`/api/export?from=${exportRange.from}&to=${exportRange.to}`}
-            >
-              <ArrowDownToLine size={16} />
-              Export data
-            </a>
+            {tab !== "methodology" && (
+              <Button variant="outline" asChild>
+                <a
+                  href={`/api/export?from=${exportRange.from}&to=${exportRange.to}`}
+                >
+                  <Download data-icon="inline-start" />
+                  Export CSV
+                </a>
+              </Button>
+            )}
           </div>
 
           {tab === "decision" && (
-            <section className="date-toolbar">
-              <div className="decision-picker">
-                <CalendarDays size={18} />
-                <div>
-                  <label htmlFor="decision-date">Decision date</label>
-                  <input
-                    id="decision-date"
-                    type="date"
-                    min="2026-01-01"
-                    max="2026-01-31"
-                    value={date}
-                    onChange={(e) => {
-                      if (e.target.value) setDate(e.target.value);
-                    }}
-                  />
-                </div>
-                <div className="date-arrows">
-                  <button
-                    aria-label="Previous decision day"
-                    disabled={date <= "2026-01-01"}
-                    onClick={() => moveDay(-1)}
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <button
-                    aria-label="Next decision day"
-                    disabled={date >= "2026-01-31"}
-                    onClick={() => moveDay(1)}
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              </div>
-              <div className="cutoff-chip">
-                <Clock3 size={15} />
-                <span>
-                  Decision cutoff <strong>09:50 GMT</strong>
-                </span>
-              </div>
-              <ArrowRight size={18} className="delivery-arrow" />
-              <div className="delivery-date">
-                <span>DELIVERY DAY</span>
+            <section className="date-toolbar" aria-label="Decision context">
+              <FieldGroup className="decision-fields">
+                <Field className="date-field">
+                  <FieldLabel htmlFor="decision-date">
+                    Purchase decision date
+                  </FieldLabel>
+                  <div className="date-input-row">
+                    <Input
+                      id="decision-date"
+                      type="date"
+                      min="2026-01-01"
+                      max="2026-01-31"
+                      value={date}
+                      onInput={(e) => {
+                        if (e.currentTarget.value)
+                          setDate(e.currentTarget.value);
+                      }}
+                    />
+                    <div className="date-arrows">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        aria-label="Previous decision day"
+                        disabled={date <= "2026-01-01"}
+                        onClick={() => moveDay(-1)}
+                      >
+                        <ChevronLeft />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        aria-label="Next decision day"
+                        disabled={date >= "2026-01-31"}
+                        onClick={() => moveDay(1)}
+                      >
+                        <ChevronRight />
+                      </Button>
+                    </div>
+                  </div>
+                </Field>
+              </FieldGroup>
+              <div className="context-value">
+                <span>Purchase cutoff</span>
                 <strong>
-                  {shortDate(
-                    new Date(new Date(date + "T12:00Z").getTime() + 86400000)
-                      .toISOString()
-                      .slice(0, 10),
-                  )}{" "}
-                  2026
+                  09:50 <small>GMT</small>
                 </strong>
+              </div>
+              <div className="context-value delivery-value">
+                <span>Next-day delivery</span>
+                <strong>
+                  {shortDate(deliveryDate)} <small>2026</small>
+                </strong>
+              </div>
+              <div className="context-explanation">
+                Only publications available
+                <br />
+                at the original cutoff are selected.
               </div>
             </section>
           )}
+
           {tab === "accuracy" && (
-            <section className="date-toolbar range-toolbar">
-              <CalendarDays size={18} />
-              <label>
-                Decision dates{" "}
-                <input
-                  aria-label="First decision date"
-                  type="date"
-                  min="2026-01-01"
-                  max={range.to}
-                  value={range.from}
-                  onChange={(e) => {
-                    if (e.target.value)
-                      setRange({ ...range, from: e.target.value });
-                  }}
-                />
-              </label>
-              <span>to</span>
-              <input
-                aria-label="Last decision date"
-                type="date"
-                min={range.from}
-                max="2026-01-31"
-                value={range.to}
-                onChange={(e) => {
-                  if (e.target.value)
-                    setRange({ ...range, to: e.target.value });
-                }}
-              />
-              <span className="range-note">
-                Scored at the original decision cutoff
-              </span>
+            <section
+              className="date-toolbar range-toolbar"
+              aria-label="Accuracy date range"
+            >
+              <FieldGroup className="range-fields">
+                <Field>
+                  <FieldLabel htmlFor="range-from">
+                    First decision date
+                  </FieldLabel>
+                  <Input
+                    id="range-from"
+                    type="date"
+                    min="2026-01-01"
+                    max={range.to}
+                    value={range.from}
+                    onInput={(e) => {
+                      if (e.currentTarget.value)
+                        setRange({ ...range, from: e.currentTarget.value });
+                    }}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="range-to">Last decision date</FieldLabel>
+                  <Input
+                    id="range-to"
+                    type="date"
+                    min={range.from}
+                    max="2026-01-31"
+                    value={range.to}
+                    onInput={(e) => {
+                      if (e.currentTarget.value)
+                        setRange({ ...range, to: e.currentTarget.value });
+                    }}
+                  />
+                </Field>
+              </FieldGroup>
+              <p className="context-explanation">
+                Each forecast is scored against the following day’s outturn.
+                <br />
+                January 31 decisions include February 1 delivery.
+              </p>
             </section>
           )}
 
           {error ? (
-            <div className="error-state" role="alert">
-              <h2>We couldn’t load the snapshot</h2>
-              <p>{error}</p>
-              <button onClick={() => setRetry(retry + 1)}>Try again</button>
-            </div>
+            <Alert variant="destructive">
+              <AlertTitle>Historical data could not be loaded</AlertTitle>
+              <AlertDescription>
+                <p>{error}</p>
+                <Button
+                  variant="outline"
+                  onClick={() => setRetry((value) => value + 1)}
+                >
+                  Retry loading data
+                </Button>
+              </AlertDescription>
+            </Alert>
           ) : loading ? (
-            <div className="loading-state" role="status">
-              Loading the historical wind snapshot…
-            </div>
+            <LoadingView />
           ) : (
             <>
-              {tab === "decision" && decision && (
-                <DecisionView
-                  decision={decision}
-                  actuals={actuals}
-                  setActuals={setActuals}
-                  date={date}
-                  onAccuracy={() => setTab("accuracy")}
-                />
-              )}
-              {tab === "accuracy" && accuracy && (
-                <AccuracyView
-                  accuracy={accuracy}
-                  onInspect={(value) => {
-                    setDate(value);
-                    setActuals(true);
-                    setTab("decision");
-                  }}
-                />
-              )}
-              {tab === "methodology" && <MethodologyView coverage={coverage} />}
+              <TabsContent value="decision">
+                {decision && (
+                  <DecisionView
+                    decision={decision}
+                    actuals={actuals}
+                    setActuals={setActuals}
+                    date={date}
+                    onAccuracy={() => setTab("accuracy")}
+                  />
+                )}
+              </TabsContent>
+              <TabsContent value="accuracy">
+                {accuracy && (
+                  <AccuracyView
+                    accuracy={accuracy}
+                    onInspect={(value) => {
+                      setDate(value);
+                      setActuals(true);
+                      setTab("decision");
+                    }}
+                  />
+                )}
+              </TabsContent>
+              <TabsContent value="methodology">
+                <MethodologyView coverage={coverage} />
+              </TabsContent>
             </>
           )}
           <footer className="page-footer">
             <span>
-              <Wind size={14} />
-              winddesk <span> / </span> January 2026 pilot
+              Wind Desk <span className="footer-divider">/</span> January 2026
+              pilot
             </span>
-            <span>Elexon data · Great Britain · All times GMT</span>
+            <span>
+              Elexon WINDFOR & FUELHH <span className="footer-divider">/</span>{" "}
+              All times GMT
+            </span>
           </footer>
         </main>
-      </div>
+      </Tabs>
     </div>
   );
 }

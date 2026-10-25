@@ -64,9 +64,9 @@ Record the browser at approximately 1440×900, hide unrelated tabs, and rehearse
 
 **Screen:** Run tests and show Dockerfile and Vercel config.
 
-“Eight focused tests cover cutoff inclusion and exclusion, missing data, averaging, revisions, duplicate conflicts, formulas, aggregation, date validation and export. Integration tests assert all 744 real-data pairs and check every selected publication against its cutoff. The frontend passes TypeScript and its production build. The dependency audit is clear. Docker builds React in one stage and runs FastAPI as a non-root user in the final image. Vercel hosts static assets and the Python API.”
+“Nine focused tests cover cutoff inclusion and exclusion, missing data, averaging, revisions, duplicate conflicts, formulas, aggregation, date validation and export. Integration tests assert all 744 real-data pairs and check every selected publication against its cutoff. The frontend passes TypeScript and its production build. The dependency audit is clear. Docker builds React in one stage and runs FastAPI as a non-root user in the final image. Vercel hosts static assets and the Python API.”
 
-**Recording note:** Describe Docker execution only if it has actually been run successfully; otherwise state that its engine was unavailable during the initial verification.
+**Recording note:** Docker build, healthy startup and the browser-to-container flow have now been verified. Show the running container and `/api/docs` if time permits.
 
 ### 8:20–9:00 — Maintainability and handoff
 

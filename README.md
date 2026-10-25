@@ -45,6 +45,8 @@ Open the Vite URL printed in the terminal. Vite proxies `/api` to port 8000. For
 | Path | Purpose |
 | --- | --- |
 | `frontend/` | React shell, separate decision/accuracy/methodology views, shared presentation helpers, API types, responsive styles |
+| `frontend/components/ui/`, `components.json` | Official shadcn/ui source components and registry configuration |
+| `public/` | Static wordmark favicon; Source Sans 3 fonts are bundled from Fontsource |
 | `backend/analysis.py` | Pure timestamp normalization, as-of forecast selection, interval alignment and metrics |
 | `backend/main.py` | Read-only FastAPI endpoints, input validation, CSV export and local static serving |
 | `scripts/fetch_data.py` | Bounded Elexon downloads with timeouts, retry/backoff, raw responses and checksums |
@@ -107,6 +109,12 @@ npm audit
 ```
 
 The tests cover no-lookahead selection, exact cutoff inclusion, independent hourly selection, actual averaging, missing intervals, duplicates/conflicts, revision ordering, metric formulas, weighted aggregation, invalid dates, CSV and month-end rollover. Real-snapshot tests deliberately require complete coverage; a changed snapshot should trigger review rather than silently degrade the pilot.
+
+The latest verification passed **9 tests**, including the application API reference at `/api/docs` and schema at `/api/openapi.json`. Docker build/startup and browser-to-container data flow have also been verified. See [verification evidence](docs/verification.md).
+
+## Interface
+
+The UI uses official **shadcn/ui** components with Radix primitives and Tailwind v4. Navy provides structure, teal identifies forecasts, and amber identifies retrospective actuals and bias. The header is a text wordmark; icons are limited to export and previous/next actions. Source Sans 3 is bundled locally, so the core dashboard needs no external font or image requests. See [design decisions and skill sources](docs/design.md).
 
 Deploy the repository to Vercel under the **Other** framework preset. The checked-in configuration builds Vite to `dist` and routes `/api/*` to the Python entrypoint. Disable deployment authentication for the public submission URL, then check it in an incognito session. Deployment is separate from Docker: Vercel uses its Python runtime, while Docker supports reproducible local execution.
 

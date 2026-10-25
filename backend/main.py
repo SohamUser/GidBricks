@@ -12,7 +12,13 @@ from fastapi.staticfiles import StaticFiles
 from backend.analysis import Analysis, FIRST, LAST
 
 ROOT = Path(__file__).resolve().parents[1]
-app = FastAPI(title="Wind Desk", version="1.0.0")
+app = FastAPI(
+    title="Wind Desk",
+    version="1.0.0",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json",
+    redoc_url=None,
+)
 
 
 @lru_cache(maxsize=1)

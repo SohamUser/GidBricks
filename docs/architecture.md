@@ -29,7 +29,7 @@ Analysis is built once per worker and cached. Date changes return 24 records; fu
 | `GET /api/coverage` | Retrieval timestamp, overall expected/matched counts, daily counts and scores |
 | `GET /api/export?from=2026-01-01&to=2026-01-31` | CSV of the exact selected forecast, actual, signed error and provenance |
 
-Invalid, reversed or out-of-window dates return 422. Missing observations are JSON null, never zero. An absent snapshot returns 503 with recovery instructions. A conflicting same-publication source value or changed forecast cadence fails analysis explicitly and requires data review. `/docs` exposes FastAPI’s interactive schema locally; Vercel routes only `/api/*` to Python.
+Invalid, reversed or out-of-window dates return 422. Missing observations are JSON null, never zero. An absent snapshot returns 503 with recovery instructions. A conflicting same-publication source value or changed forecast cadence fails analysis explicitly and requires data review. `/api/docs` exposes FastAPI’s interactive reference and `/api/openapi.json` exposes its schema in Docker and through Vercel's API routing.
 
 ## Review order
 

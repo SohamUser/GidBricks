@@ -11,10 +11,12 @@ export const shortDate = (value: string) =>
     timeZone: "Europe/London",
   });
 export const tooltipStyle = {
-  border: "1px solid #dce4df",
+  border: "1px solid var(--border)",
+  background: "var(--card)",
+  color: "var(--foreground)",
   borderRadius: 8,
   fontSize: 12,
-  boxShadow: "0 4px 20px #132b2910",
+  boxShadow: "0 4px 20px #142f4310",
 };
 
 export function Metric({
